@@ -1,0 +1,1 @@
+# AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK.ja-jp

@@ -38,27 +38,15 @@ lab:
 これらの演習では、スターター プロジェクトを使用できます。 スターター プロジェクトを設定するには、次の手順を使用します。
 
 > [!IMPORTANT]
-> これらの手順を完了するには、.NET Framework 8.0 がインストールされている必要があり、Github アカウントが必要です。
+> .NET Framework 8.0 だけでなく、C# 用の VS Code 拡張機能と NuGet パッケージ マネージャーもインストールされている必要があります。
 
-1. Visual Studio Code を開きます。
+1. `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/02/Lab-02-Starter.zip` にある ZIP ファイルをダウンロードします。
 
-1. Visual Studio Code の **[開始]** セクションで、**[Git リポジトリのクローン]** を選択してください。
+1. デスクトップ上のフォルダーなど、見つけやすく覚えやすい場所に ZIP ファイルの内容を展開します。
 
-1. URL バーに、「`https://github.com/MicrosoftLearning/MSLearn-Develop-AI-Agents-with-Azure-OpenAI-and-Semantic-Kernel-SDK.git`」と入力してください
+1. Visual Studio Code を開き、**[ファイル]** > **[フォルダーを開く]** を選択します。
 
-1. エクスプローラーで、デスクトップ内のフォルダーなど、見つけやすく覚えやすい場所に新しいフォルダーを作成してください。
-
-1. **[リポジトリの場所を選択]** ボタンをクリックしてください。
-
-    プロジェクトを正常にクローンするには、GitHub にサインインする必要があります。
-
-1. Visual Studio Code でプロジェクトを開きます。
-
-1. エクスプローラーで、**Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを右クリックし、**[統合ターミナルで開く]** をクリックします。
-
-1. **Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを展開します。
-
-    "Program.cs" ファイルが表示されます。
+1. 展開した **Starter** フォルダーに移動し、**[フォルダーの選択]** を選択します。
 
 1. コード エディターで **Program.cs** ファイルを開きます。
 
@@ -97,14 +85,14 @@ lab:
 
     これらの値は、次のタスクでカーネルを構築するために使用します。 必ずキーを秘密にして安全に保管してください。
 
-1. Visual Studio Code で **Program.cs** ファイルを開きます。
+1. Visual Studio Code で **Program.cs** ファイルに戻ります。
 
 1. 以下の変数を、Azure OpenAI Service のデプロイ名、API キー、エンドポイントで更新します
 
     ```csharp
     string yourDeploymentName = "";
     string yourEndpoint = "";
-    string yourKey = "";
+    string yourApiKey = "";
     ```
 
     > [!NOTE]

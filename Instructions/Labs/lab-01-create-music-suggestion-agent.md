@@ -15,9 +15,9 @@ lab:
 
 ## 目標
 
-このラボを完了すると、次のことを達成できます。
+このラボを完了することで、以下のことを達成できます。
 
-* 大規模言語モデル (LLM) サービスのエンドポイントを作成する
+* 大規模言語モデル (LLM) サービス用のエンドポイントを作成する
 * Semantic Kernel オブジェクトを構築する
 * Semantic Kernel SDK を使用してプロンプトを実行する
 * Semantic Kernel 関数とプラグインを作成する
@@ -39,27 +39,15 @@ lab:
 これらの演習では、スターター プロジェクトを使用できます。 スターター プロジェクトを設定するには、次の手順を使用します。
 
 > [!IMPORTANT]
-> これらの手順を完了するには、.NET Framework 8.0 がインストールされている必要があり、Github アカウントが必要です。
+> .NET Framework 8.0 だけでなく、C# 用の VS Code 拡張機能と NuGet パッケージ マネージャーもインストールされている必要があります。
 
-1. Visual Studio Code を開きます。
+1. `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/01/Lab-01-Starter.zip` にある ZIP ファイルをダウンロードします。
 
-1. Visual Studio Code の **[開始]** セクションで、**[Git リポジトリのクローン]** を選択してください。
+1. デスクトップ上のフォルダーなど、見つけやすく覚えやすい場所に ZIP ファイルの内容を展開します。
 
-1. URL バーに、「`https://github.com/MicrosoftLearning/MSLearn-Develop-AI-Agents-with-Azure-OpenAI-and-Semantic-Kernel-SDK.git`」と入力してください
+1. Visual Studio Code を開き、**[ファイル]** > **[フォルダーを開く]** を選択します。
 
-1. エクスプローラーで、デスクトップ内のフォルダーなど、見つけやすく覚えやすい場所に新しいフォルダーを作成してください。
-
-1. **[リポジトリの場所を選択]** ボタンをクリックしてください。
-
-    プロジェクトを正常にクローンするには、GitHub にサインインする必要があります。
-
-1. Visual Studio Code でプロジェクトを開きます。
-
-1. エクスプローラーで **Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを右クリックし、**[統合ターミナルで開く]** をクリックします。
-
-1. **Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを展開します。
-
-    "Program.cs" ファイルが表示されます。
+1. 展開した **Starter** フォルダーに移動し、**[フォルダーの選択]** を選択します。
 
 1. コード エディターで **Program.cs** ファイルを開きます。
 
@@ -102,19 +90,9 @@ lab:
 
 この演習では、最初の Semantic Kernel SDK プロジェクトをビルドする方法について学習します。 学習するのは、新しいプロジェクトを作成し、Semantic Kernel SDK の NuGet パッケージを追加して、Semantic Kernel SDK への参照を追加する方法です。 それでは始めましょう。
 
-1. Visual Studio Code を開きます。
+1. Visual Studio Code プロジェクトに戻ります。
 
-1. エクスプローラーで **Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを右クリックし、**[統合ターミナルで開く]** をクリックします。
-
-1. **Lab01-create-music-recommendations-agent/Lab01-Project** フォルダーを展開します。
-
-    "Program.cs" ファイルが表示されます。
-
-1. コード エディターで **Program.cs** ファイルを開きます。
-
-1. プロジェクトのディレクトリのターミナルを開きます。
-
-    フォルダー名を右クリックし、[統合ターミナルで開く] を選択することで、ターミナルを開くことができます
+1. **[ターミナル]** > **[新しいターミナル]** を選択してターミナルを開きます。
 
 1. ターミナルで、次のコマンドを実行して Semantic Kernel SDK をインストールします。
 
@@ -126,10 +104,10 @@ lab:
     using Microsoft.SemanticKernel;
 
     var builder = Kernel.CreateBuilder();
-    builder.Services.AddAzureOpenAIChatCompletion(
-        "your-resource-name",
+    builder.AddAzureOpenAIChatCompletion(
+        "your-deployment-name",
         "your-endpoint",
-        "your-resource-key",
+        "your-api-key",
         "deployment-model");
     var kernel = builder.Build();
     ```
@@ -198,7 +176,7 @@ lab:
         // Read the existing content from the file
         string filePath = "Files/RecentlyPlayed.txt";
         string jsonContent = File.ReadAllText(filePath);
-        var RecentlyPlayed = (JsonArray) JsonNode.Parse(jsonContent);
+        var recentlyPlayed = (JsonArray) JsonNode.Parse(jsonContent);
 
         var newSong = new JsonObject
         {
@@ -576,10 +554,10 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 
     ```c#
     var builder = Kernel.CreateBuilder();
-    builder.Services.AddAzureOpenAIChatCompletion(
-        "your-resource-name",
+    builder.AddAzureOpenAIChatCompletion(
+        "your-deployment-name",
         "your-endpoint",
-        "your-resource-key",
+        "your-api-key",
         "deployment-model");
     var kernel = builder.Build();
     kernel.ImportPluginFromType<MusicLibraryPlugin>();

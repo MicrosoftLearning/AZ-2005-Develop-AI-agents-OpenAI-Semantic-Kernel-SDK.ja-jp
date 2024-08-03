@@ -1,6 +1,6 @@
 ---
 lab:
-  title: 'ラボ:Azure OpenAI と Semantic Kernel SDK を使用して AI エージェントを開発する'
+  title: 'ラボ: Azure OpenAI と Semantic Kernel SDK を使用して AI エージェントを開発する'
   module: 'Module 01: Build your kernel'
 ---
 
@@ -71,9 +71,9 @@ lab:
 
 :::image type="content" source="../media/model-deployments.png" alt-text="Azure OpenAI デプロイ ページのスクリーンショット。":::
 
-1. **[新しいデプロイの作成]**、**[モデルのデプロイ]** の順に選択します。
+1. **[新しいデプロイの作成]** を選択し、**[+ 新しいデプロイの作成]** を選択します。
 
-1. **[モデルの選択]** で **[gpt-35-turbo-16k]** を選択します。
+1. **[モデルのデプロイ]** ポップアップで、**[gpt-35-turbo-16k]** を選択します。
 
     既定のモデル バージョンを使用します
 
@@ -108,6 +108,8 @@ lab:
 
     ```c#
     using AITravelAgent;
+    using System.ComponentModel;
+    using Microsoft.SemanticKernel;
 
     class CurrencyConverter
     {
@@ -247,6 +249,7 @@ lab:
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
+    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
     var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
 
     var result = await kernel.InvokeAsync(prompts["GetTargetCurrencies"],
@@ -281,6 +284,7 @@ lab:
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
+    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
     var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
 
     Console.WriteLine("What would you like to do?");
@@ -331,6 +335,7 @@ lab:
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
+    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
     var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
 
     OpenAIPromptExecutionSettings settings = new()
@@ -526,12 +531,12 @@ lab:
           "description": "The destination a user wants to visit",
           "required": true
       }
-  ]
-  ```
+   ]
+   ```
 
 1. **Prompts/SuggestActivities/skprompt.txt** に移動してファイルを開きます
 
-1. チャット履歴を使うためのプロンプトを追加します。
+1. プロンプトの最初の半分を、チャット履歴変数を使用する次のプロンプトに置き換えます。
 
     ```html 
     You are an experienced travel agent. 

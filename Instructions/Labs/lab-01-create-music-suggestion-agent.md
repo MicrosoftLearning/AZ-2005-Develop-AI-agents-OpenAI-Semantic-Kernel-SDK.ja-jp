@@ -30,7 +30,7 @@ lab:
 演習を完了するには、次の項目がシステムにインストールされている必要があります。
 
 * [Visual Studio Code](https://code.visualstudio.com)
-* [最新の .NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
+* [最新の .NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 * Visual Studio Code 用の [C# 拡張機能](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
 
 
@@ -41,7 +41,11 @@ lab:
 > [!IMPORTANT]
 > .NET Framework 8.0 だけでなく、C# 用の VS Code 拡張機能と NuGet パッケージ マネージャーもインストールされている必要があります。
 
-1. `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/01/Lab-01-Starter.zip` にある ZIP ファイルをダウンロードします。
+1. 次の URL を新しいブラウザー ウィンドウに貼り付けます。
+   
+     `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/01/Lab-01-Starter.zip`
+
+1. ページの右上にある [`...`] ボタンをクリックして zip ファイルをダウンロードするか、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> を押します。
 
 1. デスクトップ上のフォルダーなど、見つけやすく覚えやすい場所に ZIP ファイルの内容を展開します。
 
@@ -50,6 +54,9 @@ lab:
 1. 展開した **Starter** フォルダーに移動し、**[フォルダーの選択]** を選択します。
 
 1. コード エディターで **Program.cs** ファイルを開きます。
+
+> [!NOTE]
+> フォルダー内のファイルを信頼するように求められたら、**[はい、作成者を信頼します]** を選択します。 
 
 ## 演習 1:Semantic Kernel SDK を使用してプロンプトを実行する
 
@@ -122,7 +129,7 @@ lab:
     Console.WriteLine(result);
     ```
 
-1. コードを実行し、世界で最も有名なミュージシャンの上位 5 人を含む Azure Open AI モデルからの応答が表示されることを確認します。
+1. 「`dotnet run`」と入力してコードを実行し、世界で最も有名なミュージシャンの上位 5 人を含んだ応答が Azure Open AI モデルから表示されることを確認します。
 
     応答は、カーネルに渡した Azure Open AI モデルから返されます。 Semantic Kernel SDK は、大規模言語モデル (LLM) に接続し、プロンプトを実行できます。 LLM からどれだけ迅速に応答を受け取ったかに注目してください。 Semantic Kernel SDK を使用すると、スマート アプリケーションを簡単かつ効率的に構築できます。
 
@@ -224,7 +231,7 @@ lab:
     Added 'Danse' to recently played
     ```
 
-    "RecentlyPlayed.txt" を開くと、リストに追加した新しい曲が表示されます。
+    "Files/RecentlyPlayed.txt" を開くと、リストに追加した新しい曲が表示されます。
 
 ### タスク 2:パーソナライズされた曲のレコメンデーションを提供する
 
@@ -305,16 +312,16 @@ lab:
 
 1. "Plugins" フォルダーに、"MusicConcertPlugin.cs" という名前の新しいファイルを作成します
 
-1. MusicConcertPlugin ファイルに、次のコードを追加します。
+1. "MusicConcertPlugin" ファイルに、次のコードを追加します。
 
     ```c#
     using System.ComponentModel;
     using Microsoft.SemanticKernel;
 
-    public class MusicConcertPlugin
+    public class MusicConcertsPlugin
     {
         [KernelFunction, Description("Get a list of upcoming concerts")]
-        public static string GetTours()
+        public static string GetConcerts()
         {
             string content = File.ReadAllText($"Files/ConcertDates.txt");
             return content;
@@ -417,11 +424,21 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 1. 'Program.cs' ファイルのコードを次のように更新します。
 
     ```c#
+    using Microsoft.SemanticKernel;
+    using Microsoft.SemanticKernel.Planning.Handlebars;
+    
+    var builder = Kernel.CreateBuilder();
+    builder.AddAzureOpenAIChatCompletion(
+        "your-deployment-name",
+        "your-endpoint",
+        "your-api-key",
+        "deployment-model");
     var kernel = builder.Build();
     kernel.ImportPluginFromType<MusicLibraryPlugin>();
-    kernel.ImportPluginFromType<MusicConcertPlugin>();
+    kernel.ImportPluginFromType<MusicConcertsPlugin>();
     kernel.ImportPluginFromPromptDirectory("Prompts");
 
+    #pragma warning disable SKEXP0060
     var planner = new HandlebarsPlanner(new HandlebarsPlannerOptions() { AllowLoops = true });
 
     string location = "Redmond WA USA";
@@ -433,6 +450,8 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 
     Console.WriteLine($"{result}");
     ```
+
+    >[!NOTE] Handlebars パッケージは現在プレビュー段階であるため、コードを実行するには、コンパイラの警告を抑制する必要がある可能性があります。
 
 1. ターミナルに「`dotnet run`」と入力します。
 
@@ -512,7 +531,7 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 
     次に、この生成されたテンプレートを使用して、独自の Handlebars プランを作成します。 
 
-1. 次のテキストを含む 'handlebarsTemplate.txt' という新しいファイルを作成します。
+1. "Files" ディレクトリに、次のテキストを含んだ "HandlebarsTemplate.txt" という新しいファイルを作成します。
 
     ```output
     {{set "addSong" addSong}}
@@ -553,6 +572,9 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 1. 既存のコードを変更して、Handlebars プランを削除します。
 
     ```c#
+    using Microsoft.SemanticKernel;
+    using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+
     var builder = Kernel.CreateBuilder();
     builder.AddAzureOpenAIChatCompletion(
         "your-deployment-name",
@@ -579,7 +601,7 @@ Handlebars プランナーは、タスクを実行するために必要な手順
 1. テンプレート ファイルを読み取るコードを追加して関数を作成します。
 
     ```c#
-    string template = File.ReadAllText($"handlebarsTemplate.txt");
+    string template = File.ReadAllText($"Files/HandlebarsTemplate.txt");
 
     var handlebarsPromptFunction = kernel.CreateFunctionFromPrompt(
         new() {

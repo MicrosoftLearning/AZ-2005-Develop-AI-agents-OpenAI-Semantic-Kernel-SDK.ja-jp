@@ -30,7 +30,7 @@ lab:
 演習を完了するには、次の項目がシステムにインストールされている必要があります。
 
 * [Visual Studio Code](https://code.visualstudio.com)
-* [最新の .NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
+* [最新の .NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 * Visual Studio Code 用の [C# 拡張機能](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
 
 ### 開発環境を準備する
@@ -40,7 +40,11 @@ lab:
 > [!IMPORTANT]
 > .NET Framework 8.0 だけでなく、C# 用の VS Code 拡張機能と NuGet パッケージ マネージャーもインストールされている必要があります。
 
-1. `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/02/Lab-02-Starter.zip` にある ZIP ファイルをダウンロードします。
+1. 次の URL を新しいブラウザー ウィンドウに貼り付けます。
+   
+     `https://github.com/MicrosoftLearning/AZ-2005-Develop-AI-agents-OpenAI-Semantic-Kernel-SDK/blob/master/Allfiles/Labs/02/Lab-02-Starter.zip`
+
+1. ページの右上にある [<kbd>...</kbd>] ボタンをクリックして zip ファイルをダウンロードするか、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> を押します。
 
 1. デスクトップ上のフォルダーなど、見つけやすく覚えやすい場所に ZIP ファイルの内容を展開します。
 
@@ -49,6 +53,9 @@ lab:
 1. 展開した **Starter** フォルダーに移動し、**[フォルダーの選択]** を選択します。
 
 1. コード エディターで **Program.cs** ファイルを開きます。
+
+> [!NOTE]
+> フォルダー内のファイルを信頼するように求められたら、**[はい、作成者を信頼します]** を選択します。
 
 ## 演習 1:Semantic Kernel SDK を使用してプラグインを作成する
 
@@ -102,9 +109,9 @@ lab:
 
 このタスクでは、基本通貨からターゲット通貨に金額を換算できるネイティブ関数を作成します。
 
-1. **Plugins/ConvertCurrency** フォルダーに `CurrencyConverter.cs` という名前の新しいファイルを作成します
+1. **Plugins/ConvertCurrency** フォルダーに **CurrencyConverter.cs** という名前の新しいファイルを作成します。
 
-1. `CurrencyConverter.cs` ファイルに、次のコードを追加してプラグイン関数を作成します。
+1. **CurrencyConverter.cs** ファイルに、次のコードを追加してプラグイン関数を作成します。
 
     ```c#
     using AITravelAgent;
@@ -122,9 +129,9 @@ lab:
     }
     ```
 
-    このコードでは、`KernelFunction` デコレーターを使用してネイティブ関数を宣言します。 `Description` デコレーターも使用して、関数の動作の説明を追加します。 `Currency.Currencies` を使用して、通貨とその為替レートの辞書を取得できます。 次に、特定の金額をある通貨から別の通貨に換算するためのロジックを追加します。
+    このコードでは、**KernelFunction** デコレーターを使用して、ネイティブ関数を宣言します。 また、**Description** デコレーターを使用して、関数の動作の説明を追加します。 **Currency.Currencies** を使用すると、通貨とその為替レートの辞書を取得できます。 次に、特定の金額をある通貨から別の通貨に換算するためのロジックを追加します。
 
-1. 次のコードを使用して、`ConvertAmount` 関数を変更します。
+1. 次のコードを使用して、**ConvertAmount** 関数を変更します。
 
     ```c#
     [KernelFunction, Description("Convert an amount from one currency to another")]
@@ -156,9 +163,9 @@ lab:
     }
     ```
 
-    このコードでは、`Currency.Currencies` 辞書を使用して、ターゲットの通貨と基本通貨の `Currency` オブジェクトを取得します。 次に、この `Currency` オブジェクトを使用して、金額を基本通貨からターゲットの通貨に換算します。 最後に、換算された金額の文字列を返します。 次に、プラグインをテストしてみましょう。
+    このコードでは、**Currency.Currencies** 辞書を使用して、ターゲットの通貨と基本通貨の **Currency** オブジェクトを取得します。 次に、この **Currency** オブジェクトを使用して、金額を基本通貨からターゲットの通貨に換算します。 最後に、換算された金額の文字列を返します。 次に、プラグインをテストしてみましょう。
 
-1. `Program.cs` ファイルで、次のコードを使用して、新しいプラグイン関数をインポートして呼び出します。
+1. **Program.cs** ファイルで、次のコードを使用して、新しいプラグイン関数をインポートして呼び出します。
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
@@ -177,7 +184,7 @@ lab:
     Console.WriteLine(result);
     ```
 
-    このコードでは、`ImportPluginFromType` メソッドを使用してプラグインをインポートします。 次に、`InvokeAsync` メソッドを使用してプラグイン関数を呼び出します。 `InvokeAsync` メソッドは、プラグイン名、関数名、および辞書のパラメータを受け取ります。 最後に、結果をコンソールに出力します。 次に、コードを実行して機能することを確認します。
+    このコードでは、**ImportPluginFromType** メソッドを使用してプラグインをインポートします。 次に、**InvokeAsync** メソッドを使用してプラグイン関数を呼び出します。 **InvokeAsync** メソッドは、プラグイン名、関数名、および辞書のパラメーターを受け取ります。 最後に、結果をコンソールに出力します。 次に、コードを実行して機能することを確認します。
 
 1. ターミナルに「`dotnet run`」と入力します。 次の出力が表示されます。
 
@@ -191,11 +198,11 @@ lab:
 
 このタスクでは、ユーザーの入力を解析して、ターゲットの通貨、基本通貨、換算する金額を特定するプロンプトを作成します。
 
-1. **Prompts** フォルダーに、`GetTargetCurrencies` という名前の新しいフォルダーを作成します
+1. **Prompts** フォルダーに、**GetTargetCurrencies** という名前の新しいフォルダーを作成します。
 
-1. `GetTargetCurrencies` フォルダーに、`config.json` という名前の新しいファイルを作成します
+1. **GetTargetCurrencies** フォルダーに、**config.json** という名前の新しいファイルを作成します。
 
-1. `config.json` ファイルに、次のテキストを入力します。
+1. **config.json** ファイルに、次のテキストを入力します。
 
     ```output
     {
@@ -218,9 +225,9 @@ lab:
     }
     ```
 
-1. `GetTargetCurrencies` フォルダーに、`skprompt.txt` という名前の新しいファイルを作成します
+1. **GetTargetCurrencies** フォルダーに、**skprompt.txt** という名前の新しいファイルを作成します。
 
-1. `skprompt.txt` ファイルに、次のテキストを入力します。
+1. **skprompt.txt** ファイルに、次のテキストを入力します。
 
     ```html
     <message role="system">Identify the target currency, base currency, and 
@@ -245,7 +252,7 @@ lab:
 
 このタスクでは、アプリケーションを実行し、コードが正しく機能することを確認します。 
 
-1. 次のコードで `Program.cs` ファイルを更新して、新しいプロンプトをテストします。
+1. 次のコードで **Program.cs** ファイルを更新して、新しいプロンプトをテストします。
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
@@ -268,9 +275,9 @@ lab:
     ```
 
     > [!NOTE]
-    > コードが期待した出力を生成しない場合は、**Solution** フォルダー内のコードを確認します。 より正確な結果を生成するには、`skprompt.txt` ファイル内のプロンプトを調整することが必要な場合があります。
+    > コードが期待した出力を生成しない場合は、**Solution** フォルダー内のコードを確認します。 より正確な結果を生成するには、**skprompt.txt** ファイル内のプロンプトを調整することが必要な場合があります。
 
-これで、金額をある通貨から別の通貨に換算できるプラグインと、ユーザーの入力を `ConvertAmount` 関数が使用できる形式に解析するために使用できるプロンプトができました。 これにより、ユーザーは AI 旅行エージェントを使用して通貨の換算を簡単に実行できます。
+これで、金額をある通貨から別の通貨に換算できるプラグインと、ユーザーの入力を **ConvertAmount** 関数で使用できる形式に解析するために使用できるプロンプトができました。 これにより、ユーザーは AI 旅行エージェントを使用して通貨の換算を簡単に実行できます。
 
 ## 演習 2:ユーザーの意図に基づいてプラグインの選択を自動化する
 
@@ -280,7 +287,7 @@ lab:
 
 ### タスク 1:GetIntent プラグインを使用する
 
-1. 次のコードを使用して、`Program.cs` ファイルを更新してください。
+1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
@@ -297,7 +304,7 @@ lab:
 
     ```
 
-    このコードでは、`GetIntent` プロンプトを使用してユーザーの意図を検出します。 次に、意図を `intent` という変数に保存します。 次に、意図を `CurrencyConverter` プラグインにルーティングします。
+    このコードでは、**GetIntent** プロンプトを使用してユーザーの意図を検出します。 次に、その意図を **intent** という変数に保存します。 次に、意図を **CurrencyConverter** プラグインにルーティングします。
 
 1. 次のコードを `Program.cs` ファイルに追加します。
 
@@ -325,13 +332,13 @@ lab:
     }
     ```
 
-    `GetIntent` プラグインにより、次の値が返されます。ConvertCurrency、SuggestDestinations、SuggestActivities、Translate、HelpfulPhrases、Unknown。 `switch` ステートメントを使用して、ユーザーの意図を適切なプラグインにルーティングします。 
+    **GetIntent** プラグインからは、ConvertCurrency、SuggestDestinations、SuggestActivities、Translate、HelpfulPhrases、Unknown のいずれかの値が返されます。 **switch** ステートメントを使用して、ユーザーの意図を適切なプラグインにルーティングします。 
     
-    ユーザーの意図が通貨の変換の場合は、`GetTargetCurrencies` プロンプトを使用して通貨情報を取得します。 その後、`CurrencyConverter` プラグインを使用して金額を変換します。
+    ユーザーの意図が通貨の換算である場合は、**GetTargetCurrencies** プロンプトを使用して通貨情報を取得します。 その後、**CurrencyConverter** プラグインを使用して金額を換算します。
 
     次に、他の意図を処理するいくつかのケースを追加します。 ここでは、Semantic Kernel SDK の自動関数呼び出し機能を使用して、使用可能なプラグインに意図をルーティングしてみましょう。
 
-1. `Program.cs` ファイルに次のコードを追加して、関数呼び出しの自動設定を作成してください。
+1. **Program.cs** ファイルに次のコードを追加して、関数呼び出しの自動設定を作成します。
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
@@ -353,7 +360,7 @@ lab:
 
     次に、他の意図の switch ステートメントにケースを追加します。
 
-1. 次のコードを使用して、`Program.cs` ファイルを更新してください。
+1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
     switch (intent) {
@@ -373,9 +380,9 @@ lab:
     }
     ```
 
-    このコードでは、`AutoInvokeKernelFunctions` 設定を使用して、カーネルで参照されている関数とプロンプトを自動的に呼び出します。 ユーザーの意図が通貨の変換の場合、`CurrencyConverter` プラグインがそのタスクを実行します。 
+    このコードでは、**AutoInvokeKernelFunctions** 設定を使用して、カーネルで参照されている関数とプロンプトを自動的に呼び出します。 ユーザーの意図が通貨の換算である場合は、**CurrencyConverter** プラグインがそのタスクを実行します。 
     
-    ユーザーの意図が目的地またはアクティビティの提案の取得、フレーズの翻訳、ある言語での役に立つフレーズの取得の場合、`AutoInvokeKernelFunctions` 設定によりプロジェクト コードに含まれていた既存のプラグインが自動的に呼び出されます。
+    ユーザーの意図が目的地またはアクティビティの提案の取得、フレーズの翻訳、ある言語での役に立つフレーズの取得である場合は、**AutoInvokeKernelFunctions** 設定により、プロジェクト コードに含まれていた既存のプラグインが自動的に呼び出されます。
 
     これらの意図のいずれのケースにも該当しない場合は、ユーザーの入力を大規模言語モデル (LLM) へのプロンプトとして実行するコードを追加することもできます。
 
@@ -453,9 +460,9 @@ lab:
 
 ### タスク 3:プラグインのルーティングを完了する
 
-この演習では、会話履歴を使って、大規模言語モデル (LLM) にコンテキストを提供します。 また、実際のチャットボットと同様に、ユーザーが会話を続けられるようにコードを調整します。 それでは作業を始めましょう。
+この演習では、会話履歴を使って、大規模言語モデル (LLM) にコンテキストを提供します。 また、実際のチャットボットと同様に、ユーザーが会話を続けられるようにコードを調整します。 それでは始めましょう。
 
-1. `do`-`while` ループを使ってユーザーによる入力を受け入れるようにコードを変更します。
+1. do-while ループを使用してユーザーによる入力を受け付けるように、コードを変更します。
 
     ```c#
     string input;
@@ -472,7 +479,7 @@ lab:
 
     これで、ユーザーが空白行を入力するまで会話を続けることができます。
 
-1. `SuggestDestinations` ケースを変更して、ユーザーの旅行に関する詳細をキャプチャします。
+1. **SuggestDestinations** ケースを変更して、ユーザーの旅行に関する詳細を取得します。
 
     ```c#
     case "SuggestDestinations":
@@ -482,7 +489,7 @@ lab:
         break;
     ```
 
-1. 次のコードにより、`SuggestActivities` ケースで旅行の詳細を使います。
+1. 次のコードにより、**SuggestActivities** ケースで旅行の詳細を使用します。
 
     ```c#
      case "SuggestActivities":
@@ -493,9 +500,9 @@ lab:
         break;
     ```
 
-    このコードでは、組み込みの `SummarizeConversation` 関数を使って、ユーザーとのチャットを要約します。 次に、要約を使って、目的地でのアクティビティを提案しましょう。
+    このコードでは、組み込みの **SummarizeConversation** 関数を使用して、ユーザーとのチャットを要約します。 次に、要約を使って、目的地でのアクティビティを提案しましょう。
 
-1. 次のコードを使って、`SuggestActivities` ケースを拡張します。
+1. 次のコードを使って、**SuggestActivities** ケースを拡張します。
 
     ```c#
     var activities = await kernel.InvokePromptAsync(
@@ -513,11 +520,11 @@ lab:
     break;
     ```
 
-    このコードでは、カーネル引数として `input` と `chatSummary` を追加します。 その後、カーネルはプロンプトを呼び出して、`SuggestActivities` プラグインにルーティングします。 また、ユーザーの入力とアシスタントの応答をチャット履歴に追加して、結果を表示します。 次に、`chatSummary` 変数を `SuggestActivities` プラグインに追加する必要があります。
+    このコードでは、カーネル引数として **input** と **chatSummary** を追加します。 その後、カーネルはプロンプトを呼び出して、**SuggestActivities** プラグインにルーティングします。 また、ユーザーの入力とアシスタントの応答をチャット履歴に追加して、結果を表示します。 次に、**chatSummary** 変数を **SuggestActivities** プラグインに追加する必要があります。
 
 1. **Prompts/SuggestActivities/config.json** に移動し、Visual Studio Code でファイルを開きます
 
-1. `input_variables` の下に、チャット履歴の変数を追加します。
+1. **input_variables** の下に、チャット履歴の変数を追加します。
 
     ```json
     "input_variables": [

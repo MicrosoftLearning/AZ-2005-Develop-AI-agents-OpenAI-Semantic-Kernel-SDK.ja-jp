@@ -21,7 +21,7 @@ lab:
 * Semantic Kernel オブジェクトを構築する
 * Semantic Kernel SDK を使用してプロンプトを実行する
 * Semantic Kernel 関数とプラグインを作成する
-* Handlebars プランナーを使用してタスクを自動化する
+* 自動関数呼び出しを有効にしてタスクを自動化する
 
 ## ラボのセットアップ
 
@@ -105,7 +105,7 @@ lab:
 
     `dotnet add package Microsoft.SemanticKernel --version 1.2.0`
 
-1. カーネルを作成するには、次のコードを "Program.cs" ファイルに追加します。
+1. カーネルを作成するには、次のコードを **Program.cs** ファイルに追加します。
     
     ```c#
     using Microsoft.SemanticKernel;
@@ -202,7 +202,7 @@ lab:
 
     このコードで、アーティスト、曲、ジャンルを文字列として受け入れる関数を作成します。 関数の `Description` に加えて、入力変数の説明を追加することもできます。 "RecentlyPlayed.txt" ファイルには、ユーザーが最近再生した曲の JSON 形式のリストが含まれています。 このコードは、ファイルから既存のコンテンツを読み取り、解析して、新しい曲をリストに追加します。 その後、更新されたリストがファイルに書き戻されます。
 
-1. 次のコードで "Program.cs" ファイルを更新します。
+1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
     var kernel = builder.Build();
@@ -221,7 +221,7 @@ lab:
     Console.WriteLine(result);
     ```
 
-    このコードでは、`ImportPluginFromType` を使用して `MusicLibraryPlugin` をカーネルにインポートします。 その後、呼び出すプラグイン名と関数名を使用して `InvokeAsync` を呼び出します。 また、アーティスト、曲、ジャンルを引数として渡します。
+    このコードでは、ImportPluginFromType を使用して MusicLibraryPlugin をカーネルにインポートします。 その後、呼び出すプラグイン名と関数名を使用して InvokeAsync を呼び出します。 また、アーティスト、曲、ジャンルを引数として渡します。
 
 1. ターミナルに「`dotnet run`」を入力してコードを実行します。
 
@@ -254,7 +254,7 @@ lab:
 
     この関数を使って、"MusicLibrary.txt" というファイルから使用できる音楽のリストを読み取ります。 ファイルには、JSON 形式のユーザーが使用できる曲リストが含まれています。
 
-1. 次のコードで "Program.cs" ファイルを更新します。
+1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
     var kernel = builder.Build();
@@ -373,9 +373,9 @@ lab:
     please recommend a relevant concert that is close to their location.
     ```
 
-    このプロンプトは、LLM でユーザーの入力をフィルター処理し、テキストから宛先のみを取得できるようにします。 次に、プランナーを呼び出して、ゴールを達成するためにプラグインを結合する計画を作成します。
+    このプロンプトは、LLM でユーザーの入力をフィルター処理し、テキストから宛先のみを取得できるようにします。 次に、プラグインをテストして出力を確認します。
 
-1. "Program.cs" ファイルを開き、次のコードで更新します。
+1. **Program.cs** ファイルを開き、次のコードで更新します。
 
     ```c#
     var kernel = builder.Build();    
@@ -408,27 +408,21 @@ lab:
 
     プロンプトと場所を調整してみて、他にどのような結果が生成される可能性があるかを確認します。
 
-## 演習 3:Handlebars プランを使用して提案を自動化する
+## 演習 3: ユーザー入力に基づいて提案を自動化する
 
-Handlebars プランナーは、タスクを実行するために必要な手順が複数ある場合に有用です。 プランナーは AI を使用し、カーネルに登録されているプラグインを選び、一連の手順に組み合わせて目標を達成します。 この演習では、Handlebars プランナーを使用してプラン テンプレートを生成し、それを使用して提案を自動化します。
+代わりに自動関数呼び出しを使用して、手動によるプラグイン関数の呼び出しを回避できます。 LLM は、カーネルに登録されているプラグインを自動的に選択して結合し、目標を達成します。 この演習では、自動関数呼び出しを有効にして推奨事項を自動化します。
 
 **演習のおおよその所要時間**:10 分
 
-### タスク 1:プラン テンプレートを生成する
+### タスク 1: ユーザー入力に基づいて提案を自動化する
 
-このタスクでは、Handlebars プランナーを使用してプラン テンプレートを生成します。 プラン テンプレートは、ユーザーの入力に基づいて提案を自動化するために使用されます。
+このタスクでは、自動関数呼び出しを有効にして、ユーザーの入力に基づいて提案を生成します。
 
-1. ターミナルで次のように入力して、Handlebars プランナーをインストールします。
-
-    `dotnet add package Microsoft.SemanticKernel.Planners.Handlebars --version 1.2.0-preview`
-
-    次に、SuggestConcert プロンプトを置き換え、代わりに Handlebars プランナーを使用してタスクを実行します。
-
-1. 'Program.cs' ファイルのコードを次のように更新します。
+1. **Program.cs** ファイルのコードを次のように更新します。
 
     ```c#
     using Microsoft.SemanticKernel;
-    using Microsoft.SemanticKernel.Planning.Handlebars;
+    using Microsoft.SemanticKernel.Connectors.OpenAI;
     
     var builder = Kernel.CreateBuilder();
     builder.AddAzureOpenAIChatCompletion(
@@ -441,20 +435,17 @@ Handlebars プランナーは、タスクを実行するために必要な手順
     kernel.ImportPluginFromType<MusicConcertsPlugin>();
     kernel.ImportPluginFromPromptDirectory("Prompts");
 
-    #pragma warning disable SKEXP0060
-    var planner = new HandlebarsPlanner(new HandlebarsPlannerOptions() { AllowLoops = true });
-
-    string location = "Redmond WA USA";
-    string goal = @$"Based on the user's recently played music, suggest a 
+    OpenAIPromptExecutionSettings settings = new()
+    {
+        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+    };
+    
+    string prompt = @$"Based on the user's recently played music, suggest a 
         concert for the user living in ${location}";
 
-    var plan = await planner.CreatePlanAsync(kernel, goal);
-    var result = await plan.InvokeAsync(kernel);
-
-    Console.WriteLine($"{result}");
+    var autoInvokeResult = await kernel.InvokePromptAsync(prompt, new(settings));
+    Console.WriteLine(autoInvokeResult);
     ```
-
-    >[!NOTE] Handlebars パッケージは現在プレビュー段階であるため、コードを実行するには、コンパイラの警告を抑制する必要がある可能性があります。
 
 1. ターミナルに「`dotnet run`」と入力します。
 
@@ -464,130 +455,15 @@ Handlebars プランナーは、タスクを実行するために必要な手順
     Based on the user's recently played songs, the artist "Mademoiselle" has an upcoming concert in Seattle WA, USA on February 22, 2024, which is close to Redmond WA. Therefore, the recommended concert for the user would be Mademoiselle's concert in Seattle.
     ```
 
-    次に、Handlebars プラン テンプレートを出力するようにコードを変更します。
+    セマンティック カーネルは、適切なパラメーターを使用して `SuggestConcert` 関数を自動的に呼び出すことが可能です。 エージェントは、最近再生された音楽リストとその位置情報に基づいてユーザーにコンサートを提案できました。 次に、音楽のレコメンデーションのサポートを追加できます。
 
-1. 'Program.cs' ファイルのコードを次のように更新します。
-
-    ```c#
-    var plan = await planner.CreatePlanAsync(kernel, goal);
-    Console.WriteLine("Plan:");
-    Console.WriteLine(plan);
-    ```
-
-    これで、生成されたプランを確認できます。 次に、曲の提案を含めたり、ユーザーの最近再生したものリストに曲を追加したりするようにプランを変更します。
-
-1. 次のスニペットを使用してコードを拡張します。
+1. **Program.cs** ファイルを次のコードで変更します。
 
     ```c#
-    var plan = await planner.CreatePlanAsync(kernel, 
-        @$"If add song:
-        Add a song to the user's recently played list.
-        
-        If concert recommendation:
-        Based on the user's recently played music, suggest a concert for 
-        the user living in a given location.
-
-        If song recommendation:
-        Suggest a song from the music library to the user based on their 
-        recently played songs.");
-
-    Console.WriteLine("Plan:");
-    Console.WriteLine(plan);
-    ```
-
-1. ターミナルに「`dotnet run`」と入力すると、作成したプランの出力が表示されます。
-
-    次の出力のようなテンプレートが表示されます。
-
-    ```output
-    Plan:
-    {{!-- Step 1: Identify Key Values --}}
-    {{set "location" location}}
-    {{set "addSong" addSong}}
-    {{set "concertRecommendation" concertRecommendation}}
-    {{set "songRecommendation" concertRecommendation}}
-
-    {{!-- Step 2: Use the Right Helpers --}}
-    {{#if addSong}}
-        {{set "song" song}}
-        {{set "artist" artist}}
-        {{set "genre" genre}}
-        {{set "songAdded" (MusicLibraryPlugin-AddToRecentlyPlayed artist=artist song=song genre=genre)}}  
-        {{json songAdded}}
-    {{/if}}
-
-    {{#if concertRecommendation}}
-        {{set "concertSuggested" (Prompts-SuggestConcert location=location recentlyPlayedSongs=recentlyPlayedSongs musicLibrary=musicLibrary)}}
-        {{json concertSuggested}}
-    {{/if}}
-
-    {{#if songRecommendation}}
-        {{set "songSuggested" (SuggestSongPlugin-SuggestSong recentlyPlayedSongs=recentlyPlayedSongs musicLibrary=musicLibrary)}}
-        {{json songSuggested}}
-    {{/if}}
-
-    {{!-- Step 3: Output the Result --}}
-    {{json "Goal achieved"}}
-    ```
-
-     `{{#if ...}}` 構文に注目してください。 この構文は、C# の従来の `if`-`else` ブロックと同様に、Handlebars プランナーが使用できる条件付きステートメントとして機能します。 `if` ステートメントは `{{/if}}` で閉じる必要があります。
-
-    次に、この生成されたテンプレートを使用して、独自の Handlebars プランを作成します。 
-
-1. "Files" ディレクトリに、次のテキストを含んだ "HandlebarsTemplate.txt" という新しいファイルを作成します。
-
-    ```output
-    {{set "addSong" addSong}}
-    {{set "concertRecommendation" concertRecommendation}}
-    {{set "songRecommendation" songRecommendation}}
-
-    {{#if addSong}}
-        {{set "song" song}}
-        {{set "artist" artist}}
-        {{set "genre" genre}}
-        {{set addedSong (MusicLibraryPlugin-AddToRecentlyPlayed artist song genre)}}  
-        Output The following content, do not make any modifications:
-        {{json addedSong}}     
-    {{/if}}
-
-    {{#if concertRecommendation}}
-        {{set "location" location}}
-        {{set "concert" (Prompts-SuggestConcert location)}}
-        Output The following content, do not make any modifications:
-        {{json concert}}
-    {{/if}}
-
-    {{#if songRecommendation}}
-        {{set "recentlyPlayedSongs" (MusicLibraryPlugin-GetRecentPlays)}}
-        {{set "musicLibrary" (MusicLibraryPlugin-GetMusicLibrary)}}
-        {{set "song" (SuggestSongPlugin-SuggestSong recentlyPlayedSongs musicLibrary)}}
-        Output The following content, do not make any modifications:
-        {{json song}}
-    {{/if}}
-    ```
-
-    このテンプレートでは、出力をプラグインで厳密に管理するために、テキスト生成を実行しないように LLM への命令を追加します。 それでは、テンプレートを試してみましょう。
-
-### タスク 2:Handlebars プランナーを使用して提案を自動化する
-
-このタスクでは、Handlebars プラン テンプレートから関数を作成し、それを使用してユーザーの入力に基づいて提案を自動化します。
-
-1. 既存のコードを変更して、Handlebars プランを削除します。
-
-    ```c#
-    using Microsoft.SemanticKernel;
-    using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-
-    var builder = Kernel.CreateBuilder();
-    builder.AddAzureOpenAIChatCompletion(
-        "your-deployment-name",
-        "your-endpoint",
-        "your-api-key",
-        "deployment-model");
-    var kernel = builder.Build();
-    kernel.ImportPluginFromType<MusicLibraryPlugin>();
-    kernel.ImportPluginFromType<MusicConcertsPlugin>();
-    kernel.ImportPluginFromPromptDirectory("Prompts");
+    OpenAIPromptExecutionSettings settings = new()
+    {
+        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+    };
     
     var songSuggesterFunction = kernel.CreateFunctionFromPrompt(
         promptTemplate: @"Based on the user's recently played music:
@@ -595,59 +471,52 @@ Handlebars プランナーは、タスクを実行するために必要な手順
         recommend a song to the user from the music library:
         {{$musicLibrary}}",
         functionName: "SuggestSong",
-        description: "Suggest a song to the user"
+        description: "Recommend a song from the music library"
     );
 
     kernel.Plugins.AddFromFunctions("SuggestSongPlugin", [songSuggesterFunction]);
+
+    string prompt = "Can you recommend a song from the music library?";
+
+    var autoInvokeResult = await kernel.InvokePromptAsync(prompt, new(settings));
+    Console.WriteLine(autoInvokeResult);
     ```
 
-1. テンプレート ファイルを読み取るコードを追加して関数を作成します。
+    このコードでは、LLM に曲の提案方法を指示する KernelFunction をプロンプト テンプレートから作成します。 その後、カーネルに登録し、自動関数呼び出し設定を有効にしてプロンプトを呼び出します。 カーネルは、関数を実行し、プロンプトを完了するための正しいパラメーターを指定できます。
+
+1. ターミナルで、「`dotnet run`」と入力してコードを実行します。
+
+    出力結果には、ユーザーが最近聴いた曲に基づいて、おすすめの曲を提案するようにします。 応答は次の出力のようになります。
+    
+    ```
+    Based on your recently played music, I recommend you listen to the song "Luv(sic)". It falls under the genres of hiphop and rap, which aligns with some of your recently played songs. Enjoy!  
+    ```
+
+    次に、最近再生した曲の一覧を更新するプロンプトを試してみましょう。
+
+1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
-    string template = File.ReadAllText($"Files/HandlebarsTemplate.txt");
+    string prompt = @"Add this song to the recently played songs list:  title: 'Touch', artist: 'Cat's Eye', genre: 'Pop'";
 
-    var handlebarsPromptFunction = kernel.CreateFunctionFromPrompt(
-        new() {
-            Template = template,
-            TemplateFormat = "handlebars"
-        }, new HandlebarsPromptTemplateFactory()
-    );
+    var result = await kernel.InvokePromptAsync(prompt, new(settings));
+
+    Console.WriteLine(result);
     ```
 
-    このコードでは、`Template` オブジェクトを `TemplateFormat` と共にカーネル メソッド `CreateFunctionFromPrompt` に渡します。 `CreateFunctionFromPrompt` は、特定のテンプレートの解析方法をカーネルに指示する `IPromptTemplateFactory` 型も受け入れます。 Handlebars テンプレートを使っているため、`HandlebarsPromptTemplateFactory` 型を使います。
+1. ターミナルに「`dotnet run`」と入力します
 
-    次に、いくつかの引数を指定して関数を実行し、結果を確認してみましょう。
+    出力は次のようになります。
 
-1. 次のコードを `Program.cs` ファイルに追加します。
-
-    ```c#
-    string location = "Redmond WA USA";
-    var templateResult = await kernel.InvokeAsync(handlebarsPromptFunction,
-        new() {
-            { "location", location },
-            { "concertRecommendation", true },
-            { "songRecommendation", false },
-            { "addSong", false },
-            { "artist", "" },
-            { "song", "" },
-            { "genre", "" }
-        });
-
-    Console.WriteLine(templateResult);
+    ```
+    I have added the song 'Touch' by Cat's Eye to the recently played songs list.
     ```
 
-1. ターミナルに「`dotnet run`」と入力すると、プランナー テンプレートの出力が表示されます。
+    recentlyplayed.txt ファイルを開くと、新しい曲がリストの一番上に追加されていることがわかります。
+    
 
-    次の出力のような応答が表示されます。
-
-    ```output
-    Based on the user's recently played songs, Ly Hoa seems to be a relevant artist. The closest concert to Redmond WA, USA would be in Portland OR, USA on April 16th, 2024.  
-    ```
-
-    プロンプトは、最近再生された音楽リストとその位置情報に基づいてユーザーにコンサートを提案できました。 他の変数を true に設定して、何が起こるか試してみることもできます。
-
-これで、ユーザーの入力に基づいてさまざまなアクションをコードで実行できるようになりました。 上出来
+`AutoInvokeKernelFunctions` 設定を使用すると、ユーザーのニーズに合わせてプラグインを構築することに集中できます。 これで、エージェントはユーザー入力に基づいてさまざまなアクションを自動的に実行できるようになりました。 上出来
 
 ### 確認
 
-このラボでは、ユーザーの音楽ライブラリを管理し、パーソナライズされた曲とコンサートのレコメンデーションを提供できる AI エージェントを作成しました。 Semantic Kernel SDK を使用して AI エージェントを構築し、それを大規模言語モデル (LLM) サービスに接続しました。 音楽ライブラリのカスタム プラグインを作成し、Handlebars プランナーを使用して提案を自動化し、Handlebars プラン テンプレートから関数を作成してユーザーの入力に基づいて提案を自動化しました。 以上でこのラボは完了です。
+このラボでは、ユーザーの音楽ライブラリを管理し、パーソナライズされた曲とコンサートのレコメンデーションを提供できる AI エージェントを作成しました。 Semantic Kernel SDK を使用して AI エージェントを構築し、それを大規模言語モデル (LLM) サービスに接続しました。 音楽ライブラリ用のカスタム プラグインを作成し、自動関数呼び出しを有効にして、エージェントがユーザー入力に動的に応答するようにしました。 以上でこのラボは完了です。

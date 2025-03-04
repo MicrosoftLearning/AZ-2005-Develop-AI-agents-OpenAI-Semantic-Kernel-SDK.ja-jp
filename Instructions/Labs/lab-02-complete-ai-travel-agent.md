@@ -74,566 +74,261 @@ lab:
 
 1. リソースが作成されたら、**[リソースに移動]** を選択します。
 
-1. **[概要]** ページで、**[Azure OpenAI Studio に移動]** を選択します。
+1. **[概要]** ページで、**[Go to Azure AI Foundry Portal]** を選択します。
 
-:::image type="content" source="../media/model-deployments.png" alt-text="Azure OpenAI デプロイ ページのスクリーンショット。":::
+1. **[新しいデプロイの作成]**、**[基本モデルから]** の順に選択します。
 
-1. **[新しいデプロイの作成]** を選択し、**[+ 新しいデプロイの作成]** を選択します。
+1. モデルの一覧で **gpt-35-turbo-16k** を選択します。
 
-1. **[モデルのデプロイ]** ポップアップで、**[gpt-35-turbo-16k]** を選択します。
+1. **[確認]** を選択します
 
-    既定のモデル バージョンを使用します
+1. デプロイの名前を入力し、既定のオプションのままにします。
 
-1. デプロイの名前を入力します
-
-1. デプロイが完了したら、Azure OpenAI リソースに戻ります。
+1. デプロイが完了したら、Azure portal の Azure OpenAI リソースに戻ります。
 
 1. **[リソース管理]** の下の **[キーとエンドポイント]** に移動します。
 
-    これらの値は、次のタスクでカーネルを構築するために使用します。 必ずキーを秘密にして安全に保管してください。
+    次のタスクでこのデータを使用してカーネルを構築します。 必ずキーを秘密にして安全に保管してください。
 
-1. Visual Studio Code で **Program.cs** ファイルに戻ります。
+### タスク 2: ネイティブ プラグインを作成する
 
-1. 以下の変数を、Azure OpenAI Service のデプロイ名、API キー、エンドポイントで更新します
+このタスクでは、基本通貨からターゲット通貨に金額を換算できるネイティブ関数プラグインを作成します。
 
-    ```csharp
-    string yourDeploymentName = "";
-    string yourEndpoint = "";
-    string yourApiKey = "";
+1. Visual Studio Code プロジェクトに戻ります。
+
+1. **appsettings.json** ファイルを開き、使用する Azure OpenAI サービスのモデル ID、エンドポイント、API キーで値を更新します。
+
+    ```json
+    {
+        "modelId": "gpt-35-turbo-16k",
+        "endpoint": "",
+        "apiKey": ""
+    }
     ```
 
-    > [!NOTE]
-    > Semantic Kernel SDK の一部の機能が動作するには、デプロイ モデルが "gpt-35-turbo-16k" である必要があります。
-
-### タスク 2:ネイティブ関数を作成する
-
-このタスクでは、基本通貨からターゲット通貨に金額を換算できるネイティブ関数を作成します。
-
-1. **Plugins/ConvertCurrency** フォルダーに **CurrencyConverter.cs** という名前の新しいファイルを作成します。
+1. **Plugins/ConvertCurrency** フォルダーにある **CurrencyConverter.cs** という名前の新しいファイルに移動します。
 
 1. **CurrencyConverter.cs** ファイルに、次のコードを追加してプラグイン関数を作成します。
 
     ```c#
-    using AITravelAgent;
-    using System.ComponentModel;
-    using Microsoft.SemanticKernel;
-
     class CurrencyConverter
     {
-        [KernelFunction, 
-        Description("Convert an amount from one currency to another")]
-        public static string ConvertAmount()
+        [KernelFunction("convert_currency")]
+        [Description("Converts an amount from one currency to another, for example USD to EUR")]
+        public static decimal ConvertCurrency(decimal amount, string fromCurrency, string toCurrency)
         {
-            var currencyDictionary = Currency.Currencies;
+            decimal exchangeRate = GetExchangeRate(fromCurrency, toCurrency);
+            return amount * exchangeRate;
         }
     }
     ```
 
-    このコードでは、**KernelFunction** デコレーターを使用して、ネイティブ関数を宣言します。 また、**Description** デコレーターを使用して、関数の動作の説明を追加します。 **Currency.Currencies** を使用すると、通貨とその為替レートの辞書を取得できます。 次に、特定の金額をある通貨から別の通貨に換算するためのロジックを追加します。
+    このコードでは、**KernelFunction** デコレーターを使用して、ネイティブ関数を宣言します。 また、**Description** デコレーターを使用して、関数の動作の説明を追加します。 次に、与えられた金額をある通貨から別の通貨に換算するロジックを追加します。
 
-1. 次のコードを使用して、**ConvertAmount** 関数を変更します。
-
-    ```c#
-    [KernelFunction, Description("Convert an amount from one currency to another")]
-    public static string ConvertAmount(
-        [Description("The target currency code")] string targetCurrencyCode, 
-        [Description("The amount to convert")] string amount, 
-        [Description("The starting currency code")] string baseCurrencyCode)
-    {
-        var currencyDictionary = Currency.Currencies;
-        
-        Currency targetCurrency = currencyDictionary[targetCurrencyCode];
-        Currency baseCurrency = currencyDictionary[baseCurrencyCode];
-
-        if (targetCurrency == null)
-        {
-            return targetCurrencyCode + " was not found";
-        }
-        else if (baseCurrency == null)
-        {
-            return baseCurrencyCode + " was not found";
-        }
-        else
-        {
-            double amountInUSD = Double.Parse(amount) * baseCurrency.USDPerUnit;
-            double result = amountInUSD * targetCurrency.UnitsPerUSD;
-            return @$"${amount} {baseCurrencyCode} is approximately 
-                {result.ToString("C")} in {targetCurrency.Name}s ({targetCurrencyCode})";
-        }
-    }
-    ```
-
-    このコードでは、**Currency.Currencies** 辞書を使用して、ターゲットの通貨と基本通貨の **Currency** オブジェクトを取得します。 次に、この **Currency** オブジェクトを使用して、金額を基本通貨からターゲットの通貨に換算します。 最後に、換算された金額の文字列を返します。 次に、プラグインをテストしてみましょう。
-
-1. **Program.cs** ファイルで、次のコードを使用して、新しいプラグイン関数をインポートして呼び出します。
+1. **Program.cs** ファイルで、次のコードを使用して、新しいプラグインをインポートします。
 
     ```c#
     kernel.ImportPluginFromType<CurrencyConverter>();
-    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
-    var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
-
-    var result = await kernel.InvokeAsync("CurrencyConverter", 
-        "ConvertAmount", 
-        new() {
-            {"targetCurrencyCode", "USD"}, 
-            {"amount", "52000"}, 
-            {"baseCurrencyCode", "VND"}
-        }
-    );
-
-    Console.WriteLine(result);
     ```
 
-    このコードでは、**ImportPluginFromType** メソッドを使用してプラグインをインポートします。 次に、**InvokeAsync** メソッドを使用してプラグイン関数を呼び出します。 **InvokeAsync** メソッドは、プラグイン名、関数名、および辞書のパラメーターを受け取ります。 最後に、結果をコンソールに出力します。 次に、コードを実行して機能することを確認します。
+    次に、プラグインをテストしてみましょう。
 
-1. [ターミナル]、[新しいターミナル] を選択してターミナルを開きます。
+1. **Program.cs** ファイルを右クリックし、[統合ターミナルで開く] をクリックします。
 
-1. ターミナルに「`dotnet run`」と入力します。 次の出力が表示されます。
+1. ターミナルに「`dotnet run`」と入力します。 
+
+    通貨換算を要求するプロンプトを入力します (例: 10 米国ドルは香港ドルでいくらですか?)。
+
+    次のような出力が表示されるはずです。
 
     ```output
-    $52000 VND is approximately $2.13 in US Dollars (USD)
+    Assistant: 10 USD is equivalent to 77.70 Hong Kong dollars (HKD).
     ```
 
-    ここで、プラグインが正しく機能したので、ユーザーが換算する通貨と金額を検出できる自然言語プロンプトを作成しましょう。
+## 演習 2: Handlebars プロンプトを作成する
 
-### タスク 3:プロンプトを使用してユーザー入力を解析する
-
-このタスクでは、ユーザーの入力を解析して、ターゲットの通貨、基本通貨、換算する金額を特定するプロンプトを作成します。
-
-1. **Prompts** フォルダーに、**GetTargetCurrencies** という名前の新しいフォルダーを作成します。
-
-1. **GetTargetCurrencies** フォルダーに、**config.json** という名前の新しいファイルを作成します。
-
-1. **config.json** ファイルに、次のテキストを入力します。
-
-    ```output
-    {
-        "schema": 1,
-        "type": "completion",
-        "description": "Identify the target currency, base currency, and amount to convert",
-        "execution_settings": {
-            "default": {
-                "max_tokens": 800,
-                "temperature": 0
-            }
-        },
-        "input_variables": [
-            {
-                "name": "input",
-                "description": "Text describing some currency amount to convert",
-                "required": true
-            }
-        ]
-    }
-    ```
-
-1. **GetTargetCurrencies** フォルダーに、**skprompt.txt** という名前の新しいファイルを作成します。
-
-1. **skprompt.txt** ファイルに、次のテキストを入力します。
-
-    ```html
-    <message role="system">Identify the target currency, base currency, and 
-    amount from the user's input in the format target|base|amount</message>
-
-    For example: 
-
-    <message role="user">How much in GBP is 750.000 VND?</message>
-    <message role="assistant">GBP|VND|750000</message>
-
-    <message role="user">How much is 60 USD in New Zealand Dollars?</message>
-    <message role="assistant">NZD|USD|60</message>
-
-    <message role="user">How many Korean Won is 33,000 yen?</message>
-    <message role="assistant">KRW|JPY|33000</message>
-
-    <message role="user">{{$input}}</message>
-    <message role="assistant">target|base|amount</message>
-    ```
-
-### タスク 4:作業を確認する
-
-このタスクでは、アプリケーションを実行し、コードが正しく機能することを確認します。 
-
-1. 次のコードで **Program.cs** ファイルを更新して、新しいプロンプトをテストします。
-
-    ```c#
-    kernel.ImportPluginFromType<CurrencyConverter>();
-    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
-    var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
-
-    var result = await kernel.InvokeAsync(prompts["GetTargetCurrencies"],
-        new() {
-            {"input", "How many Australian Dollars is 140,000 Korean Won worth?"}
-        }
-    );
-
-    Console.WriteLine(result);
-    ```
-
-1. ターミナルで「`dotnet run`」と入力します。 次の出力が表示されます。
-
-    ```output
-    AUD|KRW|140000
-    ```
-
-    > [!NOTE]
-    > コードが期待した出力を生成しない場合は、**Solution** フォルダー内のコードを確認します。 より正確な結果を生成するには、**skprompt.txt** ファイル内のプロンプトを調整することが必要な場合があります。
-
-これで、金額をある通貨から別の通貨に換算できるプラグインと、ユーザーの入力を **ConvertAmount** 関数で使用できる形式に解析するために使用できるプロンプトができました。 これにより、ユーザーは AI 旅行エージェントを使用して通貨の換算を簡単に実行できます。
-
-## 演習 2:ユーザーの意図に基づいてプラグインの選択を自動化する
-
-この演習では、ユーザーの意図を検出し、望ましいプラグインに会話をルーティングします。 提供されたプラグインを使用して、ユーザーの意図を取得できます。 それでは始めましょう。
+この演習では、Handlebars プロンプトから関数を作成します。 この関数は LLM に対して、ユーザーの旅行プランを作成するように指示します。 それでは始めましょう。
 
 **演習のおおよその所要時間**:10 分
 
-### タスク 1:GetIntent プラグインを使用する
+### タスク 1: Handlebars プロンプトから関数を作成する
+
+1. **Program.cs** ファイルに次の `using` ディレクティブを追加します。
+
+    `using Microsoft.SemanticKernel.PromptTemplates.Handlebars;`
 
 1. **Program.cs** ファイルを次のコードで更新します。
 
     ```c#
-    kernel.ImportPluginFromType<CurrencyConverter>();
-    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
-    var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
+    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
 
-    Console.WriteLine("What would you like to do?");
-    var input = Console.ReadLine();
-
-    var intent = await kernel.InvokeAsync<string>(
-        prompts["GetIntent"], 
-        new() {{ "input",  input }}
-    );
-
+    string hbprompt = """
+        <message role="system">Instructions: Before providing the the user with a travel itenerary, ask how many days their trip is</message>
+        <message role="user">I'm going to {{city}}. Can you create an itenerary for me?</message>
+        <message role="assistant">Sure, how many days is your trip?</message>
+        <message role="user">{{input}}</message>
+        <message role="assistant">
+        """;
     ```
 
-    このコードでは、**GetIntent** プロンプトを使用してユーザーの意図を検出します。 次に、その意図を **intent** という変数に保存します。 次に、意図を **CurrencyConverter** プラグインにルーティングします。
+    このコードでは、Handlebars テンプレート フォーマットを使用して、少数ショット プロンプトを作成します。 このプロンプトは、旅行プランを作成する前に、ユーザーからより多くの情報を取得するようにモデルを誘導します。
 
-1. 次のコードを `Program.cs` ファイルに追加します。
-
-    ```c#
-    switch (intent) {
-        case "ConvertCurrency": 
-            var currencyText = await kernel.InvokeAsync<string>(
-                prompts["GetTargetCurrencies"], 
-                new() {{ "input",  input }}
-            );
-            var currencyInfo = currencyText!.Split("|");
-            var result = await kernel.InvokeAsync("CurrencyConverter", 
-                "ConvertAmount", 
-                new() {
-                    {"targetCurrencyCode", currencyInfo[0]}, 
-                    {"baseCurrencyCode", currencyInfo[1]},
-                    {"amount", currencyInfo[2]}, 
-                }
-            );
-            Console.WriteLine(result);
-            break;
-        default:
-            Console.WriteLine("Other intent detected");
-            break;
-    }
-    ```
-
-    **GetIntent** プラグインからは、ConvertCurrency、SuggestDestinations、SuggestActivities、Translate、HelpfulPhrases、Unknown のいずれかの値が返されます。 **switch** ステートメントを使用して、ユーザーの意図を適切なプラグインにルーティングします。 
-    
-    ユーザーの意図が通貨の換算である場合は、**GetTargetCurrencies** プロンプトを使用して通貨情報を取得します。 その後、**CurrencyConverter** プラグインを使用して金額を換算します。
-
-    次に、他の意図を処理するいくつかのケースを追加します。 ここでは、Semantic Kernel SDK の自動関数呼び出し機能を使用して、使用可能なプラグインに意図をルーティングしてみましょう。
-
-1. **Program.cs** ファイルに次のコードを追加して、関数呼び出しの自動設定を作成します。
+1. **Program.cs** ファイルに次のコードを追加します。
 
     ```c#
-    kernel.ImportPluginFromType<CurrencyConverter>();
-    kernel.ImportPluginFromType<ConversationSummaryPlugin>();
-    var prompts = kernel.ImportPluginFromPromptDirectory("Prompts");
-
-    OpenAIPromptExecutionSettings settings = new()
+    // Create the prompt template config using handlebars format
+    var templateFactory = new HandlebarsPromptTemplateFactory();
+    var promptTemplateConfig = new PromptTemplateConfig()
     {
-        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        Template = hbprompt,
+        TemplateFormat = "handlebars",
+        Name = "GetItenerary",
     };
 
-    Console.WriteLine("What would you like to do?");
-    var input = Console.ReadLine();
-    var intent = await kernel.InvokeAsync<string>(
-        prompts["GetIntent"], 
-        new() {{ "input",  input }}
-    );
+    // Create a plugin from the prompt
+    var promptFunction = kernel.CreateFunctionFromPrompt(promptTemplateConfig, templateFactory);
+    var iteneraryPlugin = kernel.CreatePluginFromFunctions("TravelItenerary", [promptFunction]);
+
+    // Add the new plugin to the kernel
+    kernel.Plugins.Add(iteneraryPlugin);
     ```
 
-    次に、他の意図の switch ステートメントにケースを追加します。
+    このコードでは、プロンプトから Handlebars テンプレート構成を作成します。 そして、プロンプトのプラグイン関数を作成し、カーネルに追加します。 これで、関数を呼び出す準備が整いました。
 
-1. **Program.cs** ファイルを次のコードで更新します。
+1. ターミナルに「`dotnet run`」と入力してコードを実行します。
+
+    プランについて LLM に指示する次の入力を試してみてください。
+
+    ```output
+    Assistant: How may I help you?
+    User: I'm going to Hong Kong, can you create an itenerary for me?
+    Assistant: Sure! How many days will you be staying in Hong Kong?
+    User: 10
+    Assistant: Great! Here's a 10-day itinerary for your trip to Hong Kong:
+    ...
+    ```
+
+    これで、AI 旅行アシスタントの出発点ができました。 プロンプトとプラグインを使用して、さらに機能を追加しましょう
+
+1.  **Program.cs** ファイルに次のコードを追加します。
 
     ```c#
-    switch (intent) {
-        case "ConvertCurrency": 
-            // ...Code you entered previously...
-            break;
-        case "SuggestDestinations":
-        case "SuggestActivities":
-        case "HelpfulPhrases":
-        case "Translate":
-            var autoInvokeResult = await kernel.InvokePromptAsync(input!, new(settings));
-            Console.WriteLine(autoInvokeResult);
-            break;
-        default:
-            Console.WriteLine("Other intent detected");
-            break;
-    }
+    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
+    kernel.ImportPluginFromType<FlightBookingPlugin>();
     ```
 
-    このコードでは、**AutoInvokeKernelFunctions** 設定を使用して、カーネルで参照されている関数とプロンプトを自動的に呼び出します。 ユーザーの意図が通貨の換算である場合は、**CurrencyConverter** プラグインがそのタスクを実行します。 
+    このプラグインは、模擬の詳細を含む **flights.json** ファイルを使用してフライト予約をシミュレーションします。 次に、アシスタントにいくつかのシステム プロンプトを追加します。
+
+1.  **Program.cs** ファイルに次のコードを追加します。
+
+    ```c#
+    // Setup the assistant chat
+    var history = new ChatHistory();
+    history.AddSystemMessage("The current date is 01/10/2025");
+    history.AddSystemMessage("You are a helpful travel assistant.");
+    history.AddSystemMessage("Before providing destination recommendations, ask the user about their budget.");
+    ```
+
+    これらのプロンプトは、スムーズなユーザー エクスペリエンスを作成し、フライト予約プラグインをシミュレーションするのに役立ちます。 コードをテストする準備ができました。
+
+1. ターミナルで「`dotnet run`」と入力します。
+
+    次のプロンプトをいくつか入力してみてください。
+
+    ```output
+    1. Can you give me some destination recommendations for Europe?
+    2. I want to go to Barcelona, can you create an itenerary for me?
+    3. How many Euros is 100 USD?
+    4. Can you book me a flight to Barcelona?
+    ```
+
+    他の入力を試して、旅行アシスタントがどのように応答するかを確認してください。
+
+## 演習 3: アクションにユーザーの同意を要求する
+
+この演習では、エージェントがユーザーに代わってフライトを予約できるようにする前に、ユーザーの承認を要求するフィルター呼び出し関数を追加します。 それでは始めましょう。
+
+### タスク 1: 関数呼び出しフィルターを作成する
+
+1. **PermissionFilter.cs** という名前の新しいファイルを作成します。
+
+1. その新しいファイルに次のコードを入力します。
+
+    ```c#
+    #pragma warning disable SKEXP0001 
+    using Microsoft.SemanticKernel;
     
-    ユーザーの意図が目的地またはアクティビティの提案の取得、フレーズの翻訳、ある言語での役に立つフレーズの取得である場合は、**AutoInvokeKernelFunctions** 設定により、プロジェクト コードに含まれていた既存のプラグインが自動的に呼び出されます。
-
-    これらの意図のいずれのケースにも該当しない場合は、ユーザーの入力を大規模言語モデル (LLM) へのプロンプトとして実行するコードを追加することもできます。
-
-1. 既定のケースを以下のコードに置き換えてください。
-
-    ```c#
-    default:
-        Console.WriteLine("Sure, I can help with that.");
-        var otherIntentResult = await kernel.InvokePromptAsync(input!, new(settings));
-        Console.WriteLine(otherIntentResult);
-        break;
-    ```
-
-    ユーザーが別の意図を持っている場合、LLM はユーザーの要求を処理できます。 試してみましょう。
-
-### タスク 2:作業を確認する
-
-このタスクでは、アプリケーションを実行し、コードが正しく機能することを確認します。 
-
-1. ターミナルで「`dotnet run`」と入力します。 ダイアログが表示されたら、次のプロンプトのようなテキストを入力してください。
-
-    ```output
-    What would you like to do?
-    How many TTD is 50 Qatari Riyals?    
-    ```
-
-1. 次の応答のような出力が表示されます。
-
-    ```output
-    $50 QAR is approximately $93.10 in Trinidadian Dollars (TTD)
-    ```
-
-1. ターミナルで「`dotnet run`」と入力します。 ダイアログが表示されたら、次のプロンプトのようなテキストを入力してください。
-
-    ```output
-    What would you like to do?
-    I want to go somewhere that has lots of warm sunny beaches and delicious, spicy food!
-    ```
-
-1. 次の応答のような出力が表示されます。
-
-    ```output
-    Based on your preferences for warm sunny beaches and delicious, spicy food, I have a few destination recommendations for you:
-
-    1. Thailand: Known for its stunning beaches, Thailand offers a perfect combination of relaxation and adventure. You can visit popular beach destinations like Phuket, Krabi, or Koh Samui, where you'll find crystal-clear waters and white sandy shores. Thai cuisine is famous for its spiciness, so you'll have plenty of mouthwatering options to try, such as Tom Yum soup, Pad Thai, and Green Curry.
-
-    2. Mexico: Mexico is renowned for its beautiful coastal regions and vibrant culture. You can explore destinations like Cancun, Playa del Carmen, or Tulum, which boast stunning beaches along the Caribbean Sea. Mexican cuisine is rich in flavors and spices, offering a wide variety of dishes like tacos, enchiladas, and mole sauces that will satisfy your craving for spicy food.
-
-    ...
-
-    These destinations offer a perfect blend of warm sunny beaches and delicious, spicy food, ensuring a memorable trip for you. Let me know if you need any further assistance or if you have any specific preferences for your trip!
-    ```
-
-1. ターミナルで「`dotnet run`」と入力します。 ダイアログが表示されたら、次のプロンプトのようなテキストを入力してください。
-
-    ```output
-    What would you like to do?
-    Can you give me a recipe for chicken satay?
-
-1. You should see a response similar to the following response:
-
-    ```output
-    Sure, I can help with that.
-    Certainly! Here's a recipe for chicken satay:
-
-    ...
-    ```
-
-    意図はデフォルトのケースにルーティングされ、LLM によりチキン サテのレシピの要求が処理されるはずです。
-
-    > [!NOTE]
-    > コードが期待した出力を生成しない場合は、**Solution** フォルダー内のコードを確認します。
-
-次に、特定のプラグインに会話履歴を提供するようにルーティング ロジックを変更しましょう。 履歴を提供すると、プラグインはユーザーの要求に対するよりコンテキストに関連した応答を取得できます。
-
-### タスク 3:プラグインのルーティングを完了する
-
-この演習では、会話履歴を使って、大規模言語モデル (LLM) にコンテキストを提供します。 また、実際のチャットボットと同様に、ユーザーが会話を続けられるようにコードを調整します。 それでは始めましょう。
-
-1. do-while ループを使用してユーザーによる入力を受け付けるように、コードを変更します。
-
-    ```c#
-    string input;
-
-    do 
+    public class PermissionFilter : IFunctionInvocationFilter
     {
-        Console.WriteLine("What would you like to do?");
-        input = Console.ReadLine();
-
-        // ...
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            
+        }
     }
-    while (!string.IsNullOrWhiteSpace(input));
     ```
 
-    これで、ユーザーが空白行を入力するまで会話を続けることができます。
+    >[!NOTE] 
+    > Semantic Kernel SDK のバージョン 1.30.0 では、関数フィルターは変更できてしまうため、警告して禁止する必要があります。 
 
-1. **SuggestDestinations** ケースを変更して、ユーザーの旅行に関する詳細を取得します。
+    このコードでは、`IFunctionInvocationFilter` インターフェイスを実装します。 `OnFunctionInvocationAsync` メソッドは、AI エージェントから関数が呼び出されるたびに毎回呼び出されます。
 
-    ```c#
-    case "SuggestDestinations":
-        chatHistory.AppendLine("User:" + input);
-        var recommendations = await kernel.InvokePromptAsync(input!);
-        Console.WriteLine(recommendations);
-        break;
-    ```
-
-1. 次のコードにより、**SuggestActivities** ケースで旅行の詳細を使用します。
+1. `book_flight` 関数が呼び出されたときに検出する次のコードを追加します。
 
     ```c#
-     case "SuggestActivities":
-        var chatSummary = await kernel.InvokeAsync(
-            "ConversationSummaryPlugin", 
-            "SummarizeConversation", 
-            new() {{ "input", chatHistory.ToString() }});
-        break;
-    ```
-
-    このコードでは、組み込みの **SummarizeConversation** 関数を使用して、ユーザーとのチャットを要約します。 次に、要約を使って、目的地でのアクティビティを提案しましょう。
-
-1. 次のコードを使って、**SuggestActivities** ケースを拡張します。
-
-    ```c#
-    var activities = await kernel.InvokePromptAsync(
-        input,
-        new () {
-            {"input", input},
-            {"history", chatSummary},
-            {"ToolCallBehavior", ToolCallBehavior.AutoInvokeKernelFunctions}
-    });
-
-    chatHistory.AppendLine("User:" + input);
-    chatHistory.AppendLine("Assistant:" + activities.ToString());
+    if ((context.Function.PluginName == "FlightBooking" && context.Function.Name == "book_flight"))
+    {
     
-    Console.WriteLine(activities);
-    break;
+    }
+
+    await next(context);
     ```
 
-    このコードでは、カーネル引数として **input** と **chatSummary** を追加します。 その後、カーネルはプロンプトを呼び出して、**SuggestActivities** プラグインにルーティングします。 また、ユーザーの入力とアシスタントの応答をチャット履歴に追加して、結果を表示します。 次に、**chatSummary** 変数を **SuggestActivities** プラグインに追加する必要があります。
+    このコードでは、`FunctionInvocationContext` を使用して、呼び出されたプラグインと関数を特定します。
 
-1. **Prompts/SuggestActivities/config.json** に移動し、Visual Studio Code でファイルを開きます
-
-1. **input_variables** の下に、チャット履歴の変数を追加します。
-
-    ```json
-    "input_variables": [
-      {
-          "name": "history",
-          "description": "Some background information about the user",
-          "required": false
-      },
-      {
-          "name": "destination",
-          "description": "The destination a user wants to visit",
-          "required": true
-      }
-   ]
-   ```
-
-1. **Prompts/SuggestActivities/skprompt.txt** に移動してファイルを開きます
-
-1. プロンプトの最初の半分を、チャット履歴変数を使用する次のプロンプトに置き換えます。
-
-    ```html 
-    You are an experienced travel agent. 
-    You are helpful, creative, and very friendly. 
-    Consider the traveler's background: {{$history}}
-    ```
-
-    プロンプトの残りの部分はそのままにしておきます。 これで、プラグインはチャット履歴を使って LLM にコンテキストを提供するようになります。
-
-### タスク 4:作業を確認する
-
-このタスクでは、アプリケーションを実行し、コードが正しく機能することを確認します。
-
-1. 更新したスイッチ ケースを次のコードと比較します。
+1. 次のロジックを追加して、ユーザーがフライトを予約できるアクセス許可を要求します。
 
     ```c#
-    case "SuggestDestinations":
-            chatHistory.AppendLine("User:" + input);
-            var recommendations = await kernel.InvokePromptAsync(input!);
-            Console.WriteLine(recommendations);
-            break;
-    case "SuggestActivities":
+    if ((context.Function.PluginName == "FlightBooking" && context.Function.Name == "book_flight"))
+    {
+        Console.WriteLine("System Message: The agent requires an approval to complete this operation. Do you approve (Y/N)");
+        Console.Write("User: ");
+        string shouldProceed = Console.ReadLine()!;
 
-        var chatSummary = await kernel.InvokeAsync(
-            "ConversationSummaryPlugin", 
-            "SummarizeConversation", 
-            new() {{ "input", chatHistory.ToString() }});
+        if (shouldProceed != "Y")
+        {
+            context.Result = new FunctionResult(context.Result, "The operation was not approved by the user");
+            return;
+        }
+    }
 
-        var activities = await kernel.InvokePromptAsync(
-            input!,
-            new () {
-                {"input", input},
-                {"history", chatSummary},
-                {"ToolCallBehavior", ToolCallBehavior.AutoInvokeKernelFunctions}
-        });
-
-        chatHistory.AppendLine("User:" + input);
-        chatHistory.AppendLine("Assistant:" + activities.ToString());
-        
-        Console.WriteLine(activities);
-        break;
+    await next(context);
     ```
 
-1. ターミナルで「`dotnet run`」と入力します。 メッセージが表示されたら、次のようなテキストを入力します。
+1. **Program.cs** ファイルに移動します。
+
+1. 次のコードを使用して、カーネルにアクセス許可フィルターを追加します。
+
+    ```c#
+    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
+    kernel.ImportPluginFromType<FlightBookingPlugin>();
+    kernel.FunctionInvocationFilters.Add(new PermissionFilter());
+    ```
+
+1. ターミナルで「`dotnet run`」と入力します。
+
+    フライトを予約するためのプロンプトを入力します。 次のような応答が表示されます。
 
     ```output
-    What would you like to do?
-    How much is 60 USD in new zealand dollars?
+    User: Find me a flight to Tokyo on the 19
+    Assistant: I found a flight to Tokyo on the 19th of January. The flight is with Air Japan and the price is $1200.
+    User: Y
+    System Message: The agent requires an approval to complete this operation. Do you approve (Y/N)
+    User: N
+    Assistant: I'm sorry, but I am unable to book the flight for you.
     ```
 
-1. 次のような出力が表示されます。
-
-    ```output
-    $60 USD is approximately $97.88 in New Zealand Dollars (NZD)
-    What would you like to do?
-    ```
-
-1. 次のようなコンテキスト キューを使って、目的地の候補のプロンプトを入力します。
-
-    ```output
-    What would you like to do?
-    I'm planning an anniversary trip with my spouse, but they are currently using a wheelchair and accessibility is a must. What are some destinations that would be romantic for us?
-    ```
-
-1. 行きやすい目的地のおすすめ候補を含む出力を受け取るはずです。
-
-1. 次のような、アクティビティの候補に関するプロンプトを入力します。
-
-    ```output
-    What would you like to do?
-    What are some things to do in Barcelona?
-    ```
-
-1. 前のコンテキストに当てはまるおすすめ候補を受け取るはずです。次に示すのは、バルセロナでできるアクティビティの例です。
-
-    ```output
-    1. Visit the iconic Sagrada Família: This breathtaking basilica is an iconic symbol of Barcelona's architecture and is known for its unique design by Antoni Gaudí.
-
-    2. Explore Park Güell: Another masterpiece by Gaudí, this park offers stunning panoramic views of the city, intricate mosaic work, and whimsical architectural elements.
-
-    3. Visit the Picasso Museum: Explore the extensive collection of artworks by the iconic painter Pablo Picasso, showcasing his different periods and styles.
-    ```
-
-    > [!NOTE]
-    > 期待した出力がコードで生成されない場合は、**Solution** フォルダー内のコードを確認できます。
-
-さまざまなプロンプトとコンテキスト キューを使って、アプリケーションのテストを続けることができます。順調です。 LLM へのコンテキスト キューの提供と、ユーザーが会話を続けられるようにするコードの調整がうまくいきました。
+    エージェントは、予約に移る前にユーザーの承認を要求するはずです。
 
 ### 確認
 
-このラボでは、大規模言語モデル (LLM) サービス用のエンドポイントを作成し、Semantic Kernel オブジェクトを構築し、Semantic Kernel SDK を使用してプロンプトを実行し、Semantic Kernel 関数とプラグインを作成し、Semantic Kernel SDK の自動関数呼び出し機能を使用してユーザーの意図を適切なプラグインにルーティングしました。 また、会話履歴を使用して LLM にコンテキストを提供し、ユーザーが会話を続行できるようにしました。 以上でこのラボは完了です。
+このラボでは、大規模言語モデル (LLM) サービスのエンドポイントを作成し、Semantic Kernel オブジェクトを構築し、Semantic Kernel SDK を使用してプロンプトを実行しました。 また、プラグインを作成し、システム メッセージを利用してモデルを誘導しました。 以上でこのラボは完了です。

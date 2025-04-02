@@ -4,14 +4,14 @@ lab:
   module: 'Module 01: Build your kernel'
 ---
 
-# ラボ:AI 旅行エージェントを完成させる
+# ラボ: AI 旅行アシスタントを完成させる
 # 受講生用ラボ マニュアル
 
-このラボでは、Semantic Kernel SDK を使用して AI 旅行エージェントを完成させます。 大規模言語モデル (LLM) サービス用のエンドポイントを作成し、Semantic Kernel 関数を作成し、Semantic Kernel SDK の自動関数呼び出し機能を使用して、提供された事前構築済みプラグインを含む適切なプラグインにユーザーの意図をルーティングします。 また、会話履歴を使用して LLM にコンテキストを提供し、ユーザーが会話を続行できるようにします。
+このラボでは、Semantic Kernel SDK を使って AI 旅行アシスタントを完成させます。 大規模言語モデル (LLM) サービス用のエンドポイントを作成し、Semantic Kernel 関数を作成し、Semantic Kernel SDK の自動関数呼び出し機能を使用して、提供された事前構築済みプラグインを含む適切なプラグインにユーザーの意図をルーティングします。 また、会話履歴を使用して LLM にコンテキストを提供し、ユーザーが会話を続行できるようにします。
 
 ## 課題シナリオ
 
-あなたは、顧客向けにカスタマイズされた旅行体験の作成を専門とする旅行代理店の開発者です。 あなたは、顧客が旅行先の詳細を知り、旅行のアクティビティを計画するのに役立つ AI 旅行エージェントの作成を任されました。 この AI 旅行エージェントは、通貨の換算、目的地とアクティビティの提案、さまざまな言語での役に立つフレーズの提供、フレーズの翻訳を行うことができる必要があります。 また、この AI 旅行エージェントは、会話履歴を使用して、ユーザーの要求に対してコンテキストを考慮した応答を提供できる必要もあります。
+あなたは、顧客向けにカスタマイズされた旅行体験の作成を専門とする旅行代理店の開発者です。 あなたは、顧客が旅行先の詳細を知り旅行のアクティビティを計画するのに役立つ AI 旅行アシスタントの作成を任されました。 この AI 旅行アシスタントは、通貨の換算、目的地とアクティビティの提案、さまざまな言語での役に立つフレーズの提供、フレーズの翻訳を行える必要があります。 また、この AI 旅行アシスタントは、会話履歴を使って、ユーザーの要求に対してコンテキスト的に関連性の高い応答を提供できる必要もあります。
 
 ## 目標
 
@@ -92,7 +92,7 @@ lab:
 
 ### タスク 2: ネイティブ プラグインを作成する
 
-このタスクでは、基本通貨からターゲット通貨に金額を換算できるネイティブ関数プラグインを作成します。
+このタスクでは、基本通貨からターゲットの通貨に金額を換算できるネイティブ関数プラグインを作成します。
 
 1. Visual Studio Code プロジェクトに戻ります。
 
@@ -106,29 +106,30 @@ lab:
     }
     ```
 
-1. **Plugins/ConvertCurrency** フォルダーにある **CurrencyConverter.cs** という名前の新しいファイルに移動します。
+1. **Plugins** フォルダーにある **CurrencyConverterPlugin.cs** という名前の新しいファイルに移動します。
 
-1. **CurrencyConverter.cs** ファイルに、次のコードを追加してプラグイン関数を作成します。
+1. **CurrencyConverterPlugin.cs** ファイルで、**Create a kernel function that gets the exchange rate** (為替レートを取得するカーネル関数を作成する) というコメントの下に次のコードを追加します。
 
     ```c#
-    class CurrencyConverter
+    // Create a kernel function that gets the exchange rate
+    [KernelFunction("convert_currency")]
+    [Description("Converts an amount from one currency to another, for example USD to EUR")]
+    public static decimal ConvertCurrency(decimal amount, string fromCurrency, string toCurrency)
     {
-        [KernelFunction("convert_currency")]
-        [Description("Converts an amount from one currency to another, for example USD to EUR")]
-        public static decimal ConvertCurrency(decimal amount, string fromCurrency, string toCurrency)
-        {
-            decimal exchangeRate = GetExchangeRate(fromCurrency, toCurrency);
-            return amount * exchangeRate;
-        }
+        decimal exchangeRate = GetExchangeRate(fromCurrency, toCurrency);
+        return amount * exchangeRate;
     }
     ```
 
     このコードでは、**KernelFunction** デコレーターを使用して、ネイティブ関数を宣言します。 また、**Description** デコレーターを使用して、関数の動作の説明を追加します。 次に、与えられた金額をある通貨から別の通貨に換算するロジックを追加します。
 
-1. **Program.cs** ファイルで、次のコードを使用して、新しいプラグインをインポートします。
+1. **Program.cs** ファイルを開きます
+
+1. **Add plugins to the kernel** (プラグインをカーネルに追加する) というコメントの下に通貨換算プラグインをインポートします。
 
     ```c#
-    kernel.ImportPluginFromType<CurrencyConverter>();
+    // Add plugins to the kernel
+    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
     ```
 
     次に、プラグインをテストしてみましょう。
@@ -147,7 +148,7 @@ lab:
 
 ## 演習 2: Handlebars プロンプトを作成する
 
-この演習では、Handlebars プロンプトから関数を作成します。 この関数は LLM に対して、ユーザーの旅行プランを作成するように指示します。 それでは始めましょう。
+この演習では、Handlebars プロンプトから関数を作成します。 この関数は LLM に対して、ユーザーの旅行日程を作成するように指示します。 それでは始めましょう。
 
 **演習のおおよその所要時間**:10 分
 
@@ -157,23 +158,22 @@ lab:
 
     `using Microsoft.SemanticKernel.PromptTemplates.Handlebars;`
 
-1. **Program.cs** ファイルを次のコードで更新します。
+1. **Create a handlebars prompt** (ハンドルバー プロンプトを作成する) というコメントの下に次のコードを追加します。
 
     ```c#
-    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
-
+    // Create a handlebars prompt
     string hbprompt = """
-        <message role="system">Instructions: Before providing the the user with a travel itenerary, ask how many days their trip is</message>
-        <message role="user">I'm going to {{city}}. Can you create an itenerary for me?</message>
+        <message role="system">Instructions: Before providing the user with a travel itinerary, ask how many days their trip is</message>
+        <message role="user">I'm going to {{city}}. Can you create an itinerary for me?</message>
         <message role="assistant">Sure, how many days is your trip?</message>
         <message role="user">{{input}}</message>
         <message role="assistant">
         """;
     ```
 
-    このコードでは、Handlebars テンプレート フォーマットを使用して、少数ショット プロンプトを作成します。 このプロンプトは、旅行プランを作成する前に、ユーザーからより多くの情報を取得するようにモデルを誘導します。
+    このコードでは、Handlebars テンプレート フォーマットを使用して、少数ショット プロンプトを作成します。 このプロンプトは、旅行日程を作成する前に、ユーザーからより多くの情報を取得するようにモデルを誘導します。
 
-1. **Program.cs** ファイルに次のコードを追加します。
+1. **Create the prompt template config using handlebars format** (ハンドルバー形式を使ってプロンプト テンプレート構成を作成する) というコメントの下に次のコードを追加します。
 
     ```c#
     // Create the prompt template config using handlebars format
@@ -182,26 +182,30 @@ lab:
     {
         Template = hbprompt,
         TemplateFormat = "handlebars",
-        Name = "GetItenerary",
+        Name = "GetItinerary",
     };
-
-    // Create a plugin from the prompt
-    var promptFunction = kernel.CreateFunctionFromPrompt(promptTemplateConfig, templateFactory);
-    var iteneraryPlugin = kernel.CreatePluginFromFunctions("TravelItenerary", [promptFunction]);
-
-    // Add the new plugin to the kernel
-    kernel.Plugins.Add(iteneraryPlugin);
     ```
 
-    このコードでは、プロンプトから Handlebars テンプレート構成を作成します。 そして、プロンプトのプラグイン関数を作成し、カーネルに追加します。 これで、関数を呼び出す準備が整いました。
+    このコードでは、プロンプトから Handlebars テンプレート構成を作成します。 これを使用して、プラグイン関数を作成できます。
+
+1. **Create a plugin function from the prompt** (プロンプトからプラグイン関数を作成する) というコメントの下に次のコードを追加します。 
+
+    ```c#
+    // Create a plugin function from the prompt
+    var promptFunction = kernel.CreateFunctionFromPrompt(promptTemplateConfig, templateFactory);
+    var itineraryPlugin = kernel.CreatePluginFromFunctions("TravelItinerary", [promptFunction]);
+    kernel.Plugins.Add(itineraryPlugin);
+    ```
+
+    このコードでは、プロンプトのプラグイン関数を作成して、カーネルに追加します。 これで、関数を呼び出す準備が整いました。
 
 1. ターミナルに「`dotnet run`」と入力してコードを実行します。
 
-    プランについて LLM に指示する次の入力を試してみてください。
+    日程について LLM に指示する次の入力を試してみてください。
 
     ```output
     Assistant: How may I help you?
-    User: I'm going to Hong Kong, can you create an itenerary for me?
+    User: I'm going to Hong Kong, can you create an itinerary for me?
     Assistant: Sure! How many days will you be staying in Hong Kong?
     User: 10
     Assistant: Great! Here's a 10-day itinerary for your trip to Hong Kong:
@@ -210,20 +214,20 @@ lab:
 
     これで、AI 旅行アシスタントの出発点ができました。 プロンプトとプラグインを使用して、さらに機能を追加しましょう
 
-1.  **Program.cs** ファイルに次のコードを追加します。
+1.  **Add plugins to the kernel** (プラグインをカーネルに追加する) というコメントの下にフライト予約プラグインを追加します。
 
     ```c#
+    // Add plugins to the kernel
     kernel.ImportPluginFromType<CurrencyConverterPlugin>();
     kernel.ImportPluginFromType<FlightBookingPlugin>();
     ```
 
     このプラグインは、模擬の詳細を含む **flights.json** ファイルを使用してフライト予約をシミュレーションします。 次に、アシスタントにいくつかのシステム プロンプトを追加します。
 
-1.  **Program.cs** ファイルに次のコードを追加します。
+1.  **Add system messages to the chat** (チャットにシステム メッセージを追加する) というコメントの下に次のコードを追加します。
 
     ```c#
-    // Setup the assistant chat
-    var history = new ChatHistory();
+    // Add system messages to the chat
     history.AddSystemMessage("The current date is 01/10/2025");
     history.AddSystemMessage("You are a helpful travel assistant.");
     history.AddSystemMessage("Before providing destination recommendations, ask the user about their budget.");
@@ -237,7 +241,7 @@ lab:
 
     ```output
     1. Can you give me some destination recommendations for Europe?
-    2. I want to go to Barcelona, can you create an itenerary for me?
+    2. I want to go to Barcelona, can you create an itinerary for me?
     3. How many Euros is 100 USD?
     4. Can you book me a flight to Barcelona?
     ```
@@ -246,7 +250,7 @@ lab:
 
 ## 演習 3: アクションにユーザーの同意を要求する
 
-この演習では、エージェントがユーザーに代わってフライトを予約できるようにする前に、ユーザーの承認を要求するフィルター呼び出し関数を追加します。 それでは始めましょう。
+この演習では、アシスタントがユーザーに代わってフライトを予約できるようにする前に、ユーザーの承認を要求するフィルター呼び出し関数を追加します。 それでは始めましょう。
 
 ### タスク 1: 関数呼び出しフィルターを作成する
 
@@ -262,7 +266,9 @@ lab:
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
+            // Check the plugin and function names
             
+            await next(context);
         }
     }
     ```
@@ -270,17 +276,18 @@ lab:
     >[!NOTE] 
     > Semantic Kernel SDK のバージョン 1.30.0 では、関数フィルターは変更できてしまうため、警告して禁止する必要があります。 
 
-    このコードでは、`IFunctionInvocationFilter` インターフェイスを実装します。 `OnFunctionInvocationAsync` メソッドは、AI エージェントから関数が呼び出されるたびに毎回呼び出されます。
+    このコードでは、`IFunctionInvocationFilter` インターフェイスを実装します。 `OnFunctionInvocationAsync` メソッドは、AI アシスタントから関数が呼び出されるたびに常に呼び出されます。
 
 1. `book_flight` 関数が呼び出されたときに検出する次のコードを追加します。
 
     ```c#
-    if ((context.Function.PluginName == "FlightBooking" && context.Function.Name == "book_flight"))
+    // Check the plugin and function names
+    if ((context.Function.PluginName == "FlightBookingPlugin" && context.Function.Name == "book_flight"))
     {
-    
-    }
+        // Request user approval
 
-    await next(context);
+        // Proceed if approved
+    }
     ```
 
     このコードでは、`FunctionInvocationContext` を使用して、呼び出されたプラグインと関数を特定します。
@@ -288,29 +295,25 @@ lab:
 1. 次のロジックを追加して、ユーザーがフライトを予約できるアクセス許可を要求します。
 
     ```c#
-    if ((context.Function.PluginName == "FlightBooking" && context.Function.Name == "book_flight"))
+    // Request user approval
+    Console.WriteLine("System Message: The assistant requires an approval to complete this operation. Do you approve (Y/N)");
+    Console.Write("User: ");
+    string shouldProceed = Console.ReadLine()!;
+
+    // Proceed if approved
+    if (shouldProceed != "Y")
     {
-        Console.WriteLine("System Message: The agent requires an approval to complete this operation. Do you approve (Y/N)");
-        Console.Write("User: ");
-        string shouldProceed = Console.ReadLine()!;
-
-        if (shouldProceed != "Y")
-        {
-            context.Result = new FunctionResult(context.Result, "The operation was not approved by the user");
-            return;
-        }
+        context.Result = new FunctionResult(context.Result, "The operation was not approved by the user");
+        return;
     }
-
-    await next(context);
     ```
 
 1. **Program.cs** ファイルに移動します。
 
-1. 次のコードを使用して、カーネルにアクセス許可フィルターを追加します。
+1. **Add filters to the kernel** (カーネルにフィルターを追加する) というコメントの下に次のコードを追加します。
 
     ```c#
-    kernel.ImportPluginFromType<CurrencyConverterPlugin>();
-    kernel.ImportPluginFromType<FlightBookingPlugin>();
+    // Add filters to the kernel
     kernel.FunctionInvocationFilters.Add(new PermissionFilter());
     ```
 
@@ -322,12 +325,12 @@ lab:
     User: Find me a flight to Tokyo on the 19
     Assistant: I found a flight to Tokyo on the 19th of January. The flight is with Air Japan and the price is $1200.
     User: Y
-    System Message: The agent requires an approval to complete this operation. Do you approve (Y/N)
+    System Message: The assistant requires an approval to complete this operation. Do you approve (Y/N)
     User: N
     Assistant: I'm sorry, but I am unable to book the flight for you.
     ```
 
-    エージェントは、予約に移る前にユーザーの承認を要求するはずです。
+    このアシスタントは、予約に移る前にユーザーの承認を要求するはずです。
 
 ### 確認
 

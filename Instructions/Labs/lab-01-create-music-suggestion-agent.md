@@ -1,17 +1,17 @@
 ---
 lab:
-  title: 'ラボ:Azure OpenAI と Semantic Kernel SDK を使って AI エージェントを開発する'
+  title: 'ラボ: Azure OpenAI と Semantic Kernel SDK を使用して AI エージェントを開発する'
   module: 'Module 01: Build your kernel'
 ---
 
-# ラボ:AI 音楽レコメンデーション エージェントを作成する
+# ラボ: AI 音楽レコメンデーション アシスタントを作成する
 # 受講生用ラボ マニュアル
 
-このラボでは、ユーザーの音楽ライブラリを管理し、カスタマイズされた曲やコンサートのレコメンデーションを提供できる AI エージェントのコードを作成します。 Semantic Kernel SDK を使用して AI エージェントを構築し、それを大規模言語モデル (LLM) サービスに接続します。 Semantic Kernel SDK を使用すると、LLM サービスと対話し、カスタマイズされたレコメンデーションをユーザーに提供できるスマート アプリケーションを作成できます。
+このラボでは、ユーザーの音楽ライブラリを管理し、カスタマイズされた曲やコンサートのレコメンデーションを提供できる AI アシスタントのコードを作成します。 Semantic Kernel SDK を使用して AI アシスタントを構築し、それを大規模言語モデル (LLM) サービスに接続します。 Semantic Kernel SDK を使用すると、LLM サービスと対話し、カスタマイズされたレコメンデーションをユーザーに提供できるスマート アプリケーションを作成できます。
 
 ## 課題シナリオ
 
-あなたは国際的なオーディオ ストリーミング サービスの開発者です。 サービスを AI と統合して、よりパーソナライズされたエクスペリエンスをユーザーに提供する職務を担っています。 ユーザーの視聴履歴や好みに基づいて、曲や今後のアーティストのツアーを AI で推奨できるようにする必要があります。 あなたは Semantic Kernel SDK を使用して、大規模言語モデル (LLM) サービスと対話できる AI エージェントを構築することにしました。
+あなたは国際的なオーディオ ストリーミング サービスの開発者です。 サービスを AI と統合して、よりパーソナライズされたエクスペリエンスをユーザーに提供する職務を担っています。 ユーザーの視聴履歴や好みに基づいて、曲や今後のアーティストのツアーを AI で推奨できるようにする必要があります。 あなたは Semantic Kernel SDK を使用して、大規模言語モデル (LLM) サービスと対話できる AI アシスタントを構築することにしました。
 
 ## 目標
 
@@ -121,20 +121,25 @@ lab:
     using Microsoft.SemanticKernel.Connectors.OpenAI;
     ```
 
-1. カーネルを作成するには、次のコードを **Program.cs** ファイルに追加します。
-    
+1. **Create a kernel builder with Azure OpenAI chat completion** (Azure OpenAI チャットによる候補を使ってカーネル ビルダーを作成する) というコメントの下に次のコードを追加します。
+
     ```c#
     // Create a kernel builder with Azure OpenAI chat completion
     var builder = Kernel.CreateBuilder();
     builder.AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+    ```
 
+1. **Build the kernel** (カーネルを作成する) というコメントの下に次のコードを追加して、カーネルを作成します。
+
+    ```c#
     // Build the kernel
     var kernel = builder.Build();
     ```
 
-1. カーネルとエンドポイントが動作していることを確認するために、次のコードを入力します。
+1. **Verify the endpoint and run a prompt** (エンドポイントを確認しプロンプトを実行する) というコメントの下に次のコードを追加します。
 
     ```c#
+    // Verify the endpoint and run a prompt
     var result = await kernel.InvokePromptAsync("Who are the top 5 most famous musicians in the world?");
     Console.WriteLine(result);
     ```
@@ -147,6 +152,8 @@ lab:
 
     応答は、カーネルに渡した Azure Open AI モデルから返されます。 Semantic Kernel SDK は、大規模言語モデル (LLM) に接続し、プロンプトを実行できます。 LLM からどれだけ迅速に応答を受け取ったかに注目してください。 Semantic Kernel SDK を使用すると、スマート アプリケーションを簡単かつ効率的に構築できます。
 
+応答を確認したら、確認コードを削除できます。
+
 ## 演習 2:カスタム音楽ライブラリ プラグインを作成する
 
 この演習では、音楽ライブラリ用のカスタム プラグインを作成します。 ユーザーの最近再生したものリストに曲を追加する、最近再生した曲リストを取得する、パーソナライズされた曲のレコメンデーションを提供する関数を作成します。 また、ユーザーの位置情報と最近再生した曲に基づいてコンサートを提案する関数も作成します。
@@ -157,149 +164,101 @@ lab:
 
 このタスクでは、ユーザーの最近再生したものリストに曲を追加し、最近再生した曲リストを取得できるプラグインを作成します。 わかりやすくするために、最近再生した曲はテキスト ファイルに保存されます。
 
-1. **Plugins** フォルダーに、新しいファイル **MusicLibraryPlugin.cs** を作成します。
+1. **Plugins** フォルダーで、ファイル **MusicLibraryPlugin.cs** を開きます。
 
-    まず、いくつかのクイック関数を作成し、曲を取得してユーザーの "最近再生したもの" リストに追加します。
+1. **Create a kernel function to get recently played songs** (最近再生された曲を取得するカーネル関数を作成する) というコメントの下に、次のカーネル関数デコレーターを追加します。
 
-1. 次のコードを入力します。
 
     ```c#
-    using System.Text.Json;
-    using System.Text.Json.Nodes;
-    using Microsoft.SemanticKernel;
-
-    public class MusicLibraryPlugin
-    {
-        [KernelFunction("GetRecentPlays")]
-        public static string GetRecentPlays()
-        {
-            string content = File.ReadAllText($"Files/RecentlyPlayed.txt");
-            return content;
-        }
-    }
+    // Create a kernel function to get recently played songs
+    [KernelFunction("GetRecentPlays")]
+    public static string GetRecentPlays()
     ```
 
-    このコードでは、`KernelFunction` デコレーターを使用してネイティブ関数を宣言します。 AI が正しく呼び出せるように、わかりやすい名前を関数に付けます。 ユーザーの最近再生したものリストは "RecentlyPlayed.txt" というテキスト ファイルに保存されます。 次に、リストに曲を加えるコードを追加できます。
+    `KernelFunction` デコレーターでは、ネイティブ関数を宣言します。 AI が正しく呼び出せるように、わかりやすい名前を関数に付けます。 ユーザーの最近再生したものリストは "RecentlyPlayed.txt" というテキスト ファイルに保存されます。
 
-1. `MusicLibraryPlugin` クラスに次のコードを追加します。
+1. **Create a kernel function to add a song to the recently played list** (最近再生された曲のリストに曲を追加するカーネル関数を作成する) というコメントの下に、次のカーネル関数デコレーターを追加します。
 
     ```c#
+    // Create a kernel function to add a song to the recently played list
     [KernelFunction("AddToRecentPlays")]
     public static string AddToRecentlyPlayed(string artist,  string song, string genre)
-    {
-        // Read the existing content from the file
-        string filePath = "Files/RecentlyPlayed.txt";
-        string jsonContent = File.ReadAllText(filePath);
-        var recentlyPlayed = (JsonArray) JsonNode.Parse(jsonContent)!;
-
-        var newSong = new JsonObject
-        {
-            ["title"] = song,
-            ["artist"] = artist,
-            ["genre"] = genre
-        };
-
-        // Insert the new song
-        recentlyPlayed.Insert(0, newSong);
-        File.WriteAllText(filePath, JsonSerializer.Serialize(recentlyPlayed,
-            new JsonSerializerOptions { WriteIndented = true }));
-
-        return $"Added '{song}' to recently played";
-    }
     ```
 
-    このコードで、アーティスト、曲、ジャンルを文字列として受け入れる関数を作成します。 "RecentlyPlayed.txt" ファイルには、ユーザーが最近再生した曲の JSON 形式のリストが含まれています。 このコードは、ファイルから既存のコンテンツを読み取り、解析して、新しい曲をリストに追加します。 その後、更新されたリストがファイルに書き戻されます。
+    このプラグイン クラスがカーネルに追加されると、これらの関数を識別して呼び出せるようになります。
 
-1. **Program.cs** ファイルを次のコードで更新します。
+1. **Program.cs** ファイルに移動します。
+
+1. **Import plugins to the kernel** (カーネルにプラグインをインポートする) というコメントの下に次のコードを追加します。
 
     ```c#
-    var kernel = builder.Build();
+    // Import plugins to the kernel
     kernel.ImportPluginFromType<MusicLibraryPlugin>();
+    ```
 
+1. **Create prompt execution settings** (プロンプト実行の設定を作成する) というコメントの下に次のコードを追加して、関数が自動的に呼び出されるようにします。
+
+    ```c#
+    // Create prompt execution settings
+    OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new() 
+    {
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    };
+    ```
+
+    この設定を使用すると、プロンプトで関数を指定しなくても、カーネルが関数を自動的に呼び出せるようになります。
+
+1. **Get chat completion service** (チャット入力候補サービスを取得する) というコメントの下に、次のコードを追加します。
+
+    ```c#
     // Get chat completion service.
     var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-
-    // Create a chat history object
     ChatHistory chatHistory = [];
     ```
 
-    このコードでは、プラグインをカーネルにインポートし、チャット入力候補の設定を追加します。
-
-1. プラグインを呼び出す次のプロンプトを追加します。
+1. **Create a helper function to await and output the reply from the chat completion service** (チャット入力候補サービスからの応答を待機して出力するヘルパー関数を作成する) というコメントの下に、次のコードを追加します。
 
     ```c#
+    // Create a helper function to await and output the reply from the chat completion service
+    async Task GetAssistantReply() {
+        ChatMessageContent reply = await chatCompletionService.GetChatMessageContentAsync(
+            chatHistory,
+            kernel: kernel,
+            executionSettings: openAIPromptExecutionSettings
+        );
+        chatHistory.AddAssistantMessage(reply.ToString());
+        Console.WriteLine(reply.ToString());
+    }
+    ```
+
+
+1. **Add system messages to the chat** (チャットにシステム メッセージを追加する) というコメントの下に、次のコードを追加します。
+
+    ```c#
+    // Add system messages to the chat
     chatHistory.AddSystemMessage("When a user has played a song, add it to their list of recent plays.");
     chatHistory.AddSystemMessage("The listener has just played the song Danse by Tiara. It falls under these genres: French pop, electropop, pop.");
-
-    ChatMessageContent reply = await chatCompletionService.GetChatMessageContentAsync(
-        chatHistory,
-        kernel: kernel
-    );
-    Console.WriteLine(reply.ToString());
-    chatHistory.AddAssistantMessage(reply.ToString());
+    await GetAssistantReply();
     ```
 
 1. ターミナルに「`dotnet run`」を入力してコードを実行します。
 
-    次の出力が表示されます。
+    追加したシステム メッセージ プロンプトでプラグイン関数が呼び出され、次の出力が表示されるはずです。
 
     ```output
     Added 'Danse' to recently played
     ```
 
-    "Files/RecentlyPlayed.txt" を開くと、リストに追加した新しい曲が表示されます。
+    **Files/RecentlyPlayed.txt** を開くと、リストに新しい曲が追加されたことがわかります。
 
 ### タスク 2:パーソナライズされた曲のレコメンデーションを提供する
 
 このタスクでは、最近再生した曲に基づいてユーザーにパーソナライズされた曲のレコメンデーションを提供するプロンプトを作成します。 プロンプトはネイティブ機能を組み合わせ、曲のレコメンデーションを生成します。 また、これを再利用できるように、プロンプトから関数を作成します。
 
-1. **MusicLibraryPlugin.cs** ファイルに、次の関数を追加します。
+1. **Program.cs** ファイルで、**Create a song suggester function using a prompt** (プロンプトを使って曲サジェスター関数を作成する) というコメントの下に、次のコードを追加します。
 
     ```c#
-    [KernelFunction("GetMusicLibrary")]
-    public static string GetMusicLibrary()
-    {
-        string dir = Directory.GetCurrentDirectory();
-        string content = File.ReadAllText($"Files/MusicLibrary.txt");
-        return content;
-    }
-    ```
-
-    この関数を使って、"MusicLibrary.txt" というファイルから使用できる音楽のリストを読み取ります。 ファイルには、JSON 形式のユーザーが使用できる曲リストが含まれています。
-
-1. **Program.cs** ファイルを次のコードで更新します。
-
-    ```c#
-    chatHistory.AddSystemMessage("When a user has played a song, add it to their list of recent plays.");
-    
-    string prompt = @"This is a list of music available to the user:
-        {{MusicLibraryPlugin.GetMusicLibrary}} 
-
-        This is a list of music the user has recently played:
-        {{MusicLibraryPlugin.GetRecentPlays}}
-
-        Based on their recently played music, suggest a song from
-        the list to play next";
-
-    var result = await kernel.InvokePromptAsync(prompt);
-    Console.WriteLine(result);
-    ```
-
-    まず、リストに曲を追加するコードを削除できます。 後で、ネイティブのプラグイン関数とセマンティック プロンプトを組み合わせます。 ネイティブ関数は、大規模言語モデル (LLM) 単独ではアクセスできなかったユーザー データを取得でき、LLM はテキスト入力に基づいて曲のレコメンデーションを生成できます。
-
-1. コードをテストするには、ターミナルに入力 `dotnet run` します。
-
-    次の出力のような応答が表示されます。
-
-    ```output 
-    Based on the user's recently played music, a suggested song to play next could be "Sabry Aalil" by Yasemin since the user seems to enjoy pop and Egyptian pop music.
-    ```
-
-    >[!NOTE] お勧めの曲は、ここに示されている曲とは異なる場合があります。
-
-1. コードを変更してプロンプトから関数を作成します。
-
-    ```c#
+    // Create a song suggester function using a prompt
     var songSuggesterFunction = kernel.CreateFunctionFromPrompt(
         promptTemplate: @"This is a list of music available to the user:
         {{MusicLibraryPlugin.GetMusicLibrary}} 
@@ -318,42 +277,32 @@ lab:
 
     このコードでは、プロンプトから関数を作成して、カーネル プラグインに追加します。
 
-1. 次のコードを追加して、関数を自動的に呼び出すようにします。
+1. "Invoke the song suggester function with a prompt from the user" (ユーザーからのプロンプトで曲サジェスター関数を呼び出す) というコメントの下に、次のコードを追加します。
 
     ```c#
-    OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new() 
-    {
-        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-    };
-
+    // Invoke the song suggester function with a prompt from the user
     chatHistory.AddUserMessage("What song should I play next?");
-
-    reply = await chatCompletionService.GetChatMessageContentAsync(
-        chatHistory,
-        kernel: kernel,
-        executionSettings: openAIPromptExecutionSettings
-    );
-    Console.WriteLine(reply.ToString());
-    chatHistory.AddAssistantMessage(reply.ToString());
+    await GetAssistantReply();
     ```
 
-    このコードでは、関数の自動呼び出しを有効にする設定を作成します。 次に、関数を呼び出して応答を取得するプロンプトを追加します。
+    これで、アプリケーションはユーザーの要求に従ってプラグイン関数を自動的に呼び出すことができます。 ユーザーの情報に基づいてコンサートのレコメンデーションも提示するように、このコードを拡張しましょう。
 
 ### タスク 3:パーソナライズされたコンサートのレコメンデーションを提供する
 
 このタスクでは、ユーザーが最近聴いた曲とユーザーの位置情報に基づいてコンサートを提案するように LLM に依頼するプラグインを作成します。
 
-1. **Program.cs** ファイルで、音楽コンサート プラグインをカーネルに追加します。
+1. **Program.cs** ファイルで、**Import plugins to the kernel** (カーネルにプラグインをインポートする) というコメントの下に、コンサート プラグインをインポートします。
 
     ```c#
-    var kernel = builder.Build();    
+    // Import plugins to the kernel 
     kernel.ImportPluginFromType<MusicLibraryPlugin>();
     kernel.ImportPluginFromType<MusicConcertsPlugin>();
     ```
 
-1. プロンプトから関数を作成するコードを追加します。
+1. **Create a concert suggester function using a prompt** (プロンプトを使ってコンサート サジェスター関数を作成する) というコメントの下に、次のコードを追加します。
 
     ```c#
+    // Create a concert suggester function using a prompt
     var concertSuggesterFunction = kernel.CreateFunctionFromPrompt(
         promptTemplate: @"This is a list of the user's recently played songs:
         {{MusicLibraryPlugin.GetRecentPlays}}
@@ -376,15 +325,9 @@ lab:
 1. 新しいプラグイン関数を呼び出す次のプロンプトを追加します。
 
     ```c#
+    // Invoke the concert suggester function with a prompt from the user
     chatHistory.AddUserMessage("Can you recommend a concert for me? I live in Washington");
-
-    reply = await chatCompletionService.GetChatMessageContentAsync(
-        chatHistory,
-        kernel: kernel,
-        executionSettings: openAIPromptExecutionSettings
-    );
-    Console.WriteLine(reply.ToString());
-    chatHistory.AddAssistantMessage(reply.ToString());
+    await GetAssistantReply();
     ```
 
 1. ターミナルに「`dotnet run`」と入力します。
@@ -397,8 +340,8 @@ lab:
     
     LLM からの応答は、これとは異なる場合があります。 プロンプトと場所を調整してみて、他にどのような結果が生成される可能性があるかを確認します。
 
-これで、エージェントはユーザー入力に基づいてさまざまなアクションを自動的に実行できるようになりました。 上出来
+これで、アシスタントはユーザー入力に基づいてさまざまなアクションを自動的に実行できるようになりました。 上出来
 
 ### 確認
 
-このラボでは、ユーザーの音楽ライブラリを管理し、パーソナライズされた曲とコンサートのレコメンデーションを提供できる AI エージェントを作成しました。 Semantic Kernel SDK を使用して AI エージェントを構築し、それを大規模言語モデル (LLM) サービスに接続しました。 音楽ライブラリ用のカスタム プラグインを作成し、自動関数呼び出しを有効にして、エージェントがユーザー入力に動的に応答するようにしました。 以上でこのラボは完了です。
+このラボでは、ユーザーの音楽ライブラリを管理し、カスタマイズされた曲やコンサートのレコメンデーションを提供できる AI アシスタントを作成しました。 Semantic Kernel SDK を使用して AI アシスタントを構築し、それを大規模言語モデル (LLM) サービスに接続しました。 音楽ライブラリ用のカスタム プラグインを作成し、自動関数呼び出しを有効にして、アシスタントがユーザー入力に動的に応答するようにしました。 以上でこのラボは完了です。

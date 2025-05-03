@@ -1,25 +1,23 @@
 ---
-title: オンラインでホストされる手順
+title: Semantic Kernel と Azure OpenAI で生成 AI ソリューションを開発する
 permalink: index.html
 layout: home
 ---
 
-# コンテンツ ディレクトリ
+次の演習は、Semantic Kernel と Azure OpenAI で生成 AI ソリューションを構築するときに開発者が実行する一般的なタスクについて調べる、実践的な学習体験を提供するように設計されています。
 
-各ラボの演習とデモへのハイパーリンクを以下に示します。
+> **注**: これらの演習を完了するには、必要な Azure リソースと生成 AI モデルをプロビジョニングするのに十分なアクセス許可とクォータがある Azure サブスクリプションが必要です。 まだお持ちでない場合は、[Azure アカウント](https://azure.microsoft.com/free)にサインアップできます。 新規ユーザーには、最初の 30 日間のクレジットが付属する無料試用版オプションがあります。
 
-## ラボ
+## 演習
 
-{% assign labs = site.pages | where_exp:"page", "page.url contains '/Instructions/Labs'" %}
-| モジュール | ラボ |
-| --- | --- | 
-{% for activity in labs %}| {{ activity.lab.module }} | [{{ activity.lab.title }}{% if activity.lab.type %} - {{ activity.lab.type }}{% endif %}]({{ site.github.url }}{{ activity.url }}) |
+{% assign labs = site.pages | where_exp:"page", "page.url contains '/Instructions'" %} {% for activity in labs  %}
+<hr>
+### [{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }})
+
+{{activity.lab.description}}
+
 {% endfor %}
 
-## デモ
+> **注**: これらの演習は単独でも完了できますが、[Microsoft Learn](https://learn.microsoft.com/training/paths/develop-ai-agents-azure-open-ai-semantic-kernel-sdk/) のモジュールを補完するように設計されています。このモジュールでは、これらの演習の基になる概念の一部について詳しく説明しています。
 
-{% assign demos = site.pages | where_exp:"page", "page.url contains '/Instructions/Demos'" %}
-| モジュール | デモ |
-| --- | --- | 
-{% for activity in demos %}| {{ activity.demo.module }} | [{{ activity.demo.title }}]({{ site.github.url }}{{ activity.url }}) |
-{% endfor %}
+

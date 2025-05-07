@@ -1,11 +1,14 @@
 ---
 lab:
-  title: Semantic Kernel SDK で DevOps アシスタントを作成する
+  title: Semantic Kernel で AI アシスタントを作成する
+  description: Semantic Kernel を使用して、DevOps タスクを実行できる生成 AI アシスタントを構築する方法について説明します。
 ---
 
-# Semantic Kernel SDK で DevOps アシスタントを作成する
+# Semantic Kernel で AI アシスタントを作成する
 
-このラボでは、TODO 機能を果たす AI アシスタントのコードを作成します。 Semantic Kernel SDK を使用して AI アシスタントを構築し、それを大規模言語モデル (LLM) サービスに接続します。 Semantic Kernel SDK を使用すると、LLM サービスと対話し、カスタマイズされたレコメンデーションをユーザーに提供できるスマート アプリケーションを作成できます。
+このラボでは、開発業務を自動化しタスクの効率化に役立つように設計された AI アシスタントのコードを開発します。 Semantic Kernel SDK を使用して AI アシスタントを構築し、それを大規模言語モデル (LLM) サービスに接続します。 Semantic Kernel SDK を使用すると、LLM サービスとやり取りし、自然言語クエリに応答し、パーソナライズされたインサイトをユーザーに提供できるスマート アプリケーションを作成できます。 この演習では、一般的な DevOps タスクを表すモック関数が用意されています。 それでは始めましょう。
+
+この演習は約 **30** 分かかります。
 
 ## チャット入力候補モデルをデプロイする
 
@@ -240,9 +243,9 @@ lab:
 
     **<font color="red">Cloud Shell セッションが既に認証されている場合でも、Azure にサインインする必要があります。</font>**
 
-    > **注**: ほとんどのシナリオでは、*az login* を使用するだけで十分です。 ただし、複数のテナントにサブスクリプションがある場合は、*--tenant* パラメーターを使用してテナントを指定する必要がある可能性があります。 詳細については、「[Azure CLI を使用して対話形式で Azure にサインインする](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)」をご覧ください。
+    > **注**: ほとんどのシナリオでは、*[az ログイン]* を使用するだけで十分です。 ただし、複数のテナントにサブスクリプションがある場合は、*--tenant* パラメーターを使用してテナントを指定する必要があります。 詳細については、「[Azure CLI を使用して対話形式で Azure にサインインする](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)」を参照してください。
 
-1. メッセージが表示されたら、指示に従って新しいタブでサインイン ページを開き、指定された認証コードと Azure 資格情報を入力します。 次に、コマンド ラインでサインイン プロセスを完了し、プロンプトが表示されたら、必要な Azure AI Foundry ハブを含んだサブスクリプションを選択します。
+1. メッセージが表示されたら、指示に従って新しいタブでサインイン ページを開き、指定された認証コードと Azure 資格情報を入力します。 次に、コマンド ラインでサインイン プロセスを完了し、プロンプトが表示されたら、必要な Azure AI Foundry ハブを含むサブスクリプションを選択します。
 
 1. サインインしたら、次のコマンドを入力してアプリケーションを実行します。
 
@@ -457,6 +460,7 @@ lab:
 
     **Python**
     ```python
+    # Create a function filter
     async def permission_filter(context: FunctionInvocationContext, next: Callable[[FunctionInvocationContext], Awaitable[None]]) -> None:
         await next(context)
         result = context.result

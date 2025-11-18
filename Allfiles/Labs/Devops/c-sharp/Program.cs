@@ -10,9 +10,9 @@ var config = new ConfigurationBuilder()
 .Build();
 
 // Set your values in appsettings.json
-string modelId = config["modelId"]!;
-string endpoint = config["endpoint"]!;
-string apiKey = config["apiKey"]!;
+string modelName = config["model_deployment_name"]!;
+string endpoint = config["openai_endpoint"]!;
+string apiKey = config["api_key"]!;
 
 // Create a kernel builder with Azure OpenAI chat completion
 

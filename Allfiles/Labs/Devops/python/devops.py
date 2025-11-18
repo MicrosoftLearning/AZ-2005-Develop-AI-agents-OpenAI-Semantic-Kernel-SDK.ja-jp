@@ -21,8 +21,8 @@ async def main():
 
     load_dotenv()
     api_key = os.getenv("API_KEY")
-    base_url = os.getenv("BASE_URL")
-    deployment_name = os.getenv("MODEL_DEPLOYMENT")
+    endpoint = os.getenv("MODEL_ENDPOINT")
+    model_name = os.getenv("MODEL_DEPLOYMENT_NAME")
 
     # Create a kernel builder with Azure OpenAI chat completion
 
@@ -38,9 +38,9 @@ async def main():
     
     # Create a plugin function from the prompt
 
-    # Create chat history
-
     # Create prompt execution settings
+
+    # Create chat history
 
     # User interaction logic
     """

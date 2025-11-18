@@ -14,23 +14,29 @@ lab:
 
 1. [https://portal.azure.com](https://portal.azure.com) に移動します。
 
-1. 既定の設定を使用して、新しい Azure OpenAI リソースを作成します。
+1. 既定の設定を使用して、新しい **Azure OpenAI** リソースを作成します。
 
 1. リソースが作成されたら、**[リソースに移動]** を選択します。
 
 1. **[概要]** ページで、**[Go to Azure AI Foundry Portal]** を選択します。
 
-1. **[新しいデプロイの作成]**、**[基本モデルから]** の順に選択します。
+    Azure AI Foundry ポータルが新しいタブで開きます。
 
-1. モデル一覧で **gpt-4o** を検索してから、それを選択して確認します。
+1. 左側のナビゲーション ウィンドウで **[デプロイ]** を選択します。
 
-1. デプロイの名前を入力し、既定のオプションのままにします。
+1. **[モデルのデプロイ]** を選択し、**[基本モデルのデプロイ]** を選択します。
 
-1. デプロイが完了したら、Azure portal の Azure OpenAI リソースに戻ります。
+1. モデル一覧で **gpt-4o** を検索し、選択してから **[確認]** を選択します。
 
-1. **[リソース管理]** の下の **[キーとエンドポイント]** に移動します。
+    Azure OpenAI リソースへのデプロイを構成するダイアログが表示されます。
 
-    次のタスクでこのデータを使用してカーネルを構築します。 必ずキーを秘密にして安全に保管してください。
+1. 設定を確認し、**[デプロイ]** を選択します。
+
+    デプロイが完了すると、デプロイの詳細ページが表示されます。
+
+1. **[エンドポイント]** の下にある **[ターゲット URI]** と **[キー]** を確認します。
+
+    次のタスクではこれらの値を使用してカーネルを構築します。 必ずキーを秘密にして安全に保管してください。
 
 ## アプリケーション構成を準備する
 
@@ -102,23 +108,25 @@ lab:
 
     このファイルをコード エディターで開きます。
 
-1. お使いの Azure OpenAI Services のモデル ID、エンドポイント、API キーで値を更新します。
+1. Azure OpenAI モデル デプロイから値を更新します。
 
     **Python**
     ```python
-    MODEL_DEPLOYMENT=""
-    BASE_URL=""
+    MODEL_ENDPOINT=""
     API_KEY="
+    MODEL_DEPLOYMENT_NAME=""
     ```
 
     **C#**
     ```json
     {
-        "modelName": "",
-        "endpoint": "",
-        "apiKey": ""
+        "openai_endpoint": "",
+        "api_key": "",
+        "model_deployment_name": "",
     }
     ```
+
+> **注**:C# を使用する場合は、`openai_endpoint` 値として、リソースの **[ホーム]** ページにある **Azure OpenAI** エンドポイント URL を使用します。
 
 1. 値を更新したら、**Ctrl + S** キー コマンドを使用して変更を保存してから、**Ctrl + Q** キー コマンドを使用して、Cloud Shell コマンド ラインを開いたままコード エディターを閉じます。
 
@@ -143,9 +151,9 @@ lab:
     # Create a kernel builder with Azure OpenAI chat completion
     kernel = Kernel()
     chat_completion = AzureChatCompletion(
-        deployment_name=deployment_name,
+        deployment_name=model_name,
         api_key=api_key,
-        base_url=base_url,
+        base_url=endpoint,
     )
     kernel.add_service(chat_completion)
     ```
@@ -153,11 +161,11 @@ lab:
      ```c#
     // Create a kernel builder with Azure OpenAI chat completion
     var builder = Kernel.CreateBuilder();
-    builder.AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+    builder.AddAzureOpenAIChatCompletion(modelName, endpoint, apiKey);
     var kernel = builder.Build();
     ```
 
-1. ファイルの下部付近にある **Create a kernel function to build the stage environment** (ステージング環境を構築するカーネル関数を作成する) というコメントの下に、次のコードを追加して、ステージング環境を構築するモック プラグイン関数を作成します。
+1. ファイルの下部付近にある **DevopsPlugin** クラスで "**Create a kernel function to build the stage environment**" というコメントを探して、次のコードを追加し、ステージング環境を構築するモック プラグイン関数を作成します。
 
     **Python**
     ```python
@@ -179,7 +187,7 @@ lab:
 
     `KernelFunction` デコレーターでは、ネイティブ関数を宣言します。 AI が正しく呼び出せるように、わかりやすい名前を関数に付けます。 
 
-1. **Import plugins to the kernel** (カーネルにプラグインをインポートする) というコメントの下に、次のコードを追加します。
+1. **main** メソッドでコメント "**Import plugins to the kernel**" に移動し、完成したプラグイン クラスを使用する以下のコードを追加します。
 
     **Python**
     ```python
@@ -192,7 +200,6 @@ lab:
     // Import plugins to the kernel
     kernel.ImportPluginFromType<DevopsPlugin>();
     ```
-
 
 1. **Create prompt execution settings** (プロンプト実行の設定を作成する) というコメントの下に次のコードを追加して、関数が自動的に呼び出されるようにします。
 
@@ -243,9 +250,9 @@ lab:
 
     **<font color="red">Cloud Shell セッションが既に認証されている場合でも、Azure にサインインする必要があります。</font>**
 
-    > **注**: ほとんどのシナリオでは、*[az ログイン]* を使用するだけで十分です。 ただし、複数のテナントにサブスクリプションがある場合は、*--tenant* パラメーターを使用してテナントを指定する必要があります。 詳細については、「[Azure CLI を使用して対話形式で Azure にサインインする](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)」を参照してください。
+    > **注**: ほとんどのシナリオでは、*az ログイン*を使用するだけで十分です。 ただし、複数のテナントにサブスクリプションがある場合は、*[--tenant]* パラメーターを使用してテナントを指定する必要があります。 詳細については、「[Azure CLI を使用して対話形式で Azure にサインインする](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)」を参照してください。
 
-1. メッセージが表示されたら、指示に従って新しいタブでサインイン ページを開き、指定された認証コードと Azure 資格情報を入力します。 次に、コマンド ラインでサインイン プロセスを完了し、プロンプトが表示されたら、必要な Azure AI Foundry ハブを含むサブスクリプションを選択します。
+1. メッセージが表示されたら、指示に従って新しいタブでサインイン ページを開き、指定された認証コードと Azure 資格情報を入力します。 次に、コマンド ラインでサインイン プロセスを完了し、プロンプトが表示されたら、Azure AI Foundry ハブを含むサブスクリプションを選択します。
 
 1. サインインしたら、次のコマンドを入力してアプリケーションを実行します。
 
@@ -334,7 +341,9 @@ lab:
     Assistant: The stage environment cannot be deployed because the earlier stage build failed due to unit test errors. Deploying a faulty build to stage may cause eventual issues and compromise the environment.
     ```
 
-    LLM からの応答はこれとは異なる可能性がありますが、それでもステージ サイトをデプロイできなくなります。
+    LLM からの応答はこれとは異なる可能性がありますが、それでもステージ サイトをデプロイできなくなります。 
+    
+1. <kbd>Enter</kbd> キーを押してプログラムを終了します。
 
 ## Handlebars プロンプトを作成する
 
@@ -454,6 +463,8 @@ lab:
     Assistant: The new branch `feature-login` has been successfully created from `main`.
     ```
 
+1. <kbd>Enter</kbd> キーを押してプログラムを終了します。
+
 ## アクションにユーザーの同意を要求する
 
 1. ファイルの下部付近にある **Create a function filter** (関数フィルターを作成する) というコメントの下に、次のコードを追加します。
@@ -506,9 +517,11 @@ lab:
 
     このコードでは、`FunctionInvocationContext` オブジェクトを使用して、呼び出されたプラグインと関数を特定します。
 
-1. 次のロジックを追加して、ユーザーがフライトを予約できるアクセス許可を要求します。
+1. 操作を続行するためにユーザーのアクセス許可を要求する次のロジックを追加します。
 
-     **Python**
+    正しいインデント レベルを維持してください。
+
+    **Python**
     ```python
     # Request user approval
     print("System Message: The assistant requires approval to complete this operation. Do you approve (Y/N)")
@@ -573,6 +586,8 @@ lab:
     User: N
     Assistant: I'm sorry, but I am unable to proceed with the deployment.
     ```
+
+1. <kbd>Enter</kbd> キーを押してプログラムを終了します。
 
 ### 確認
 

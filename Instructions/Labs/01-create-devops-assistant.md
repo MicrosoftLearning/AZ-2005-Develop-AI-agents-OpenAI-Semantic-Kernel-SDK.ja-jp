@@ -1,10 +1,15 @@
 ---
 lab:
-  title: Semantic Kernel で AI アシスタントを作成する
+  title: Semantic Kernel で AI アシスタントを作成する (非推奨)
   description: Semantic Kernel を使用して、DevOps タスクを実行できる生成 AI アシスタントを構築する方法について説明します。
+  duration: 30 minutes
+  level: 400
+  islab: false
 ---
 
-# Semantic Kernel で AI アシスタントを作成する
+# Semantic Kernel で AI アシスタントを作成する (非推奨)
+
+> **注**: このラボは非推奨になっています。
 
 このラボでは、開発業務を自動化しタスクの効率化に役立つように設計された AI アシスタントのコードを開発します。 Semantic Kernel SDK を使用して AI アシスタントを構築し、それを大規模言語モデル (LLM) サービスに接続します。 Semantic Kernel SDK を使用すると、LLM サービスとやり取りし、自然言語クエリに応答し、パーソナライズされたインサイトをユーザーに提供できるスマート アプリケーションを作成できます。 この演習では、一般的な DevOps タスクを表すモック関数が用意されています。 それでは始めましょう。
 
